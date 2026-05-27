@@ -35,6 +35,18 @@ from .agent import (  # noqa: F401
     METHOD_AGENT_SESSION_DELETE,
     METHOD_AGENT_COMPLETE,
 )
+from .image import (  # noqa: F401
+    ImageClient,
+    ImageError,
+    METHOD_IMAGE_GENERATE,
+    METHOD_IMAGE_EDIT,
+)
+from .host_upload import (  # noqa: F401
+    HostUploadClient,
+    UploadError,
+    METHOD_HOST_UPLOAD_FILE,
+)
+from .context import InvokeContext  # noqa: F401
 
 __all__ = [
     "SamplingClient",
@@ -46,6 +58,11 @@ __all__ = [
     "AgentSession",
     "AgentSessionClient",
     "AgentError",
+    "ImageClient",
+    "ImageError",
+    "HostUploadClient",
+    "UploadError",
+    "InvokeContext",
     "PROTOCOL_VERSION_V1",
     "PROTOCOL_VERSION_V2",
     "METHOD_INITIALIZE",
@@ -56,4 +73,7 @@ __all__ = [
     "METHOD_AGENT_SESSION_HISTORY",
     "METHOD_AGENT_SESSION_DELETE",
     "METHOD_AGENT_COMPLETE",
+    "METHOD_IMAGE_GENERATE",
+    "METHOD_IMAGE_EDIT",
+    "METHOD_HOST_UPLOAD_FILE",
 ]
