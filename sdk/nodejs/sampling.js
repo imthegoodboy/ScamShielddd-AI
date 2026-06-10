@@ -46,6 +46,7 @@ const SAMPLING_ERR_MAX_CALLS_EXCEEDED = -32006;
 const SAMPLING_ERR_MAX_TOKENS_EXCEEDED = -32007;
 const SAMPLING_ERR_NOT_NEGOTIATED = -32008;
 const SAMPLING_ERR_USER_DENIED = -32009;
+const SAMPLING_ERR_UNSUPPORTED_RESPONSE_FORMAT = -32010;
 
 class SamplingError extends Error {
   constructor(code, message, data) {
@@ -95,6 +96,15 @@ class SamplingClient {
    *                                                  preferred model.
    * @param {"none"} [params.includeContext]        — Phase 1 supports only "none".
    * @param {Object<string,string>} [params.metadata]
+   * @param {{type:"json_object"}|{type:"json_schema", json_schema:{name:string, strict?:boolean, schema:object}}} [params.responseFormat]
+   *   — optional structured-output constraint. L1 `json_object` is broadly
+   *   compatible; L2 `json_schema` requires model support — the host rejects
+   *   with -32010 (`SAMPLING_UNSUPPORTED_RESPONSE_FORMAT`) unless
+   *   `onUnsupported` opts into a downgrade. The reply is still
+   *   `content.text` (a string) — parse it yourself; the host adds
+   *   `_meta.responseFormat.structuredValid`. Schema hard limits: ≤32KB,
+   *   depth ≤8, ≤512 nodes, name `^[a-zA-Z0-9_-]{1,64}$`.
+   * @param {"error"|"json_object"|"text"} [params.onUnsupported]   — default "error".
    * @param {number} [params.timeoutMs]             — default 90 000 ms.
    * @returns {Promise<object>}
    */
@@ -113,6 +123,8 @@ class SamplingClient {
       modelPreferences,
       includeContext = "none",
       metadata,
+      responseFormat,
+      onUnsupported,
       timeoutMs = 90_000,
     } = params || {};
 
@@ -130,6 +142,8 @@ class SamplingClient {
     if (stopSequences) rpcParams.stopSequences = stopSequences;
     if (modelPreferences) rpcParams.modelPreferences = modelPreferences;
     if (metadata) rpcParams.metadata = metadata;
+    if (responseFormat != null) rpcParams.responseFormat = responseFormat;
+    if (onUnsupported != null) rpcParams.onUnsupported = onUnsupported;
 
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
@@ -207,4 +221,5 @@ module.exports = {
   SAMPLING_ERR_MAX_TOKENS_EXCEEDED,
   SAMPLING_ERR_NOT_NEGOTIATED,
   SAMPLING_ERR_USER_DENIED,
+  SAMPLING_ERR_UNSUPPORTED_RESPONSE_FORMAT,
 };

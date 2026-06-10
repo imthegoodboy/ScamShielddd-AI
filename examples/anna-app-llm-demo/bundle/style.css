@@ -51,6 +51,12 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
   font-size: 0.85rem;
 }
 .out.err { color: #c0392b; }
+.out.warn {
+  color: #9a6700;
+  border-color: #d4a72c66;
+  background: #d4a72c1a;
+}
+.out.warn[hidden] { display: none; }
 
 .mode-row {
   display: flex;

@@ -44,15 +44,16 @@ const (
 	MethodShutdown              = "shutdown"
 	MethodSamplingCreateMessage = "sampling/createMessage"
 
-	ErrCodeNotGranted        = -32001
-	ErrCodeQuotaExceeded     = -32002
-	ErrCodeProviderError     = -32003
-	ErrCodeInvalidRequest    = -32004
-	ErrCodeTimeout           = -32005
-	ErrCodeMaxCallsExceeded  = -32006
-	ErrCodeMaxTokensExceeded = -32007
-	ErrCodeNotNegotiated     = -32008
-	ErrCodeUserDenied        = -32009
+	ErrCodeNotGranted                = -32001
+	ErrCodeQuotaExceeded             = -32002
+	ErrCodeProviderError             = -32003
+	ErrCodeInvalidRequest            = -32004
+	ErrCodeTimeout                   = -32005
+	ErrCodeMaxCallsExceeded          = -32006
+	ErrCodeMaxTokensExceeded         = -32007
+	ErrCodeNotNegotiated             = -32008
+	ErrCodeUserDenied                = -32009
+	ErrCodeUnsupportedResponseFormat = -32010
 )
 
 // SamplingError wraps a JSON-RPC error returned by the host.
@@ -91,6 +92,26 @@ type ModelPreferences struct {
 	IntelligencePriority *float64    `json:"intelligencePriority,omitempty"`
 }
 
+// JSONSchemaSpec is the OpenAI-style `{name, strict?, schema}` block used
+// by ResponseFormat type "json_schema". Host-enforced hard limits: schema
+// ≤32KB serialized, nesting depth ≤8, ≤512 nodes, name `^[a-zA-Z0-9_-]{1,64}$`.
+type JSONSchemaSpec struct {
+	Name   string         `json:"name"`
+	Strict *bool          `json:"strict,omitempty"` // host defaults to true
+	Schema map[string]any `json:"schema"`
+}
+
+// ResponseFormat is the optional structured-output constraint.
+// Type is "json_object" (L1 — JSON mode, broadly compatible) or
+// "json_schema" (L2 — strict schema; requires model support, otherwise the
+// host rejects with ErrCodeUnsupportedResponseFormat unless OnUnsupported
+// opts into a downgrade). The reply is still Content.Text (a string) —
+// parse it yourself; the host adds `_meta.responseFormat.structuredValid`.
+type ResponseFormat struct {
+	Type       string          `json:"type"` // "json_object" | "json_schema"
+	JSONSchema *JSONSchemaSpec `json:"json_schema,omitempty"`
+}
+
 // CreateMessageRequest mirrors the params of `sampling/createMessage`.
 type CreateMessageRequest struct {
 	Messages         []Message         `json:"messages"`
@@ -101,6 +122,11 @@ type CreateMessageRequest struct {
 	ModelPreferences *ModelPreferences `json:"modelPreferences,omitempty"`
 	IncludeContext   string            `json:"includeContext,omitempty"` // "none" only in v1
 	Metadata         map[string]string `json:"metadata,omitempty"`
+	ResponseFormat   *ResponseFormat   `json:"responseFormat,omitempty"`
+	// OnUnsupported: "error" (default), "json_object" (downgrade to L1) or
+	// "text" (drop the constraint) when the selected model lacks the
+	// requested ResponseFormat level.
+	OnUnsupported string `json:"onUnsupported,omitempty"`
 }
 
 // Usage mirrors the MCP usage block.
