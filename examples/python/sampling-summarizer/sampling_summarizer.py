@@ -73,7 +73,18 @@ MANIFEST = {
                 {"name": "text", "type": "string", "description": "Text to summarize", "required": True},
                 {"name": "max_words", "type": "integer", "description": "Approx max words in summary", "required": False, "default": 80},
             ],
-        }
+        },
+        {
+            "name": "summarize_structured",
+            "description": (
+                "Summarize the supplied text into structured JSON "
+                "{summary, keywords, sentiment} using host structured output "
+                "(sampling responseFormat)."
+            ),
+            "parameters": [
+                {"name": "text", "type": "string", "description": "Text to analyse", "required": True},
+            ],
+        },
     ],
     "runtime": {"type": "uv", "min_version": "0.1.0"},
 }
@@ -139,6 +150,92 @@ async def _summarize(text: str, max_words: int = 80, *, invoke_id: str) -> dict:
     }
 
 
+# JSON Schema for the structured summary — host-enforced hard limits:
+# ≤32KB serialized, nesting depth ≤8, ≤512 nodes.
+_STRUCTURED_SUMMARY_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "summary": {"type": "string", "description": "One-paragraph summary"},
+        "keywords": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "3-8 salient keywords",
+        },
+        "sentiment": {
+            "type": "string",
+            "enum": ["positive", "neutral", "negative"],
+        },
+    },
+    "required": ["summary", "keywords", "sentiment"],
+    "additionalProperties": False,
+}
+
+
+async def _summarize_structured(text: str, *, invoke_id: str) -> dict:
+    """Structured-output variant: constrain the model at the protocol level.
+
+    Demonstrates `responseFormat` (L2 `json_schema`) with an explicit
+    `on_unsupported="json_object"` downgrade: if the user's selected model
+    lacks strict-schema support, the host falls back to plain JSON mode
+    instead of failing the invoke with -32010. Check
+    `_meta.responseFormat.downgraded` to learn which path was taken.
+    """
+    if not text or not text.strip():
+        return {"summary": "", "keywords": [], "sentiment": "neutral", "note": "empty input"}
+
+    result = await sampling.create_message(
+        messages=[
+            {
+                "role": "user",
+                "content": {
+                    "type": "text",
+                    "text": (
+                        "Analyse the following text. Reply with a JSON object "
+                        "containing: summary (one paragraph), keywords (3-8 strings), "
+                        "sentiment (positive|neutral|negative).\n\n---\n" + text
+                    ),
+                },
+            }
+        ],
+        max_tokens=512,
+        system_prompt="You are a precise editorial analyst. Reply with JSON only.",
+        response_format={
+            "type": "json_schema",
+            "json_schema": {
+                "name": "summary_analysis",
+                "strict": True,
+                "schema": _STRUCTURED_SUMMARY_SCHEMA,
+            },
+        },
+        on_unsupported="json_object",  # downgrade to L1 instead of -32010
+        metadata={"executa_invoke_id": invoke_id, "tool": "summarize_structured"},
+        timeout=60.0,
+    )
+
+    raw = ""
+    content = result.get("content") or {}
+    if isinstance(content, dict) and content.get("type") == "text":
+        raw = content.get("text", "")
+    rf_meta = (result.get("_meta") or {}).get("responseFormat") or {}
+
+    # The host guarantees `content.text` stays a string and only reports
+    # `structuredValid` informationally — the final parse is ours.
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError:
+        return {
+            "error": "model returned non-JSON output",
+            "raw": raw[:500],
+            "responseFormat": rf_meta,
+        }
+    return {
+        **data,
+        "model": result.get("model"),
+        "usage": result.get("usage"),
+        "responseFormat": rf_meta,
+    }
+
+
 # ─── JSON-RPC dispatch ───────────────────────────────────────────────
 
 
@@ -200,15 +297,17 @@ def _handle_invoke(req_id, params: dict) -> dict:
     args = params.get("arguments") or {}
     invoke_id = params.get("invoke_id") or ""
 
-    if tool != "summarize":
+    if tool == "summarize":
+        coro = _summarize(invoke_id=invoke_id, **args)
+    elif tool == "summarize_structured":
+        coro = _summarize_structured(invoke_id=invoke_id, **args)
+    else:
         return _make_response(
             req_id,
             error={"code": -32601, "message": f"Unknown tool: {tool}"},
         )
 
-    fut = asyncio.run_coroutine_threadsafe(
-        _summarize(invoke_id=invoke_id, **args), _loop
-    )
+    fut = asyncio.run_coroutine_threadsafe(coro, _loop)
     try:
         data = fut.result(timeout=120.0)
     except SamplingError as e:

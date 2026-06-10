@@ -33,6 +33,8 @@ const errBox = $("errors");
 const uuidInput = $("session-uuid-input");
 const sessionStatus = $("session-uuid-status");
 const lifecycleEl = $("session-lifecycle");
+const toolsEl = $("session-tools");
+const toolsWarnEl = $("tools-warning");
 const sessionListEl = $("session-list");
 const modeSel = $("llm-mode");
 const modeHint = $("mode-hint");
@@ -107,6 +109,80 @@ function renderLifecycle(info) {
   if (max) parts.push(`hard-cap ${max}`);
   if (idle != null) parts.push(`idle-ttl ${idle}s`);
   lifecycleEl.textContent = `lifecycle: ${parts.join("  ·  ")}`;
+}
+
+// ──────────────────────────────────────────────────────────
+// Tool surface — runtime-ACCURATE since host 1.1.0-beta.45.
+//
+// session.create now returns the tools the session can REALLY execute
+// (not the manifest-declared advisory list):
+//   granted_tools: ["*"]   → inherits the user's host tools (files,
+//                            browser, commands…) — side effects are real.
+//   granted_tools: [a, b]  → explicit sandbox allow-list.
+//   granted_tools: []      → TEXT-ONLY: the agent cannot touch local
+//                            files; any "changed_files" the model claims
+//                            are hallucinated (forum /t/86).
+// The same fields (+ a structured `warnings` list) arrive on the
+// `run_meta` frame that now opens every agent-run stream, so the app can
+// detect the zero-tools condition per-run even on an attach()'d session.
+
+function showToolsWarning(msg) {
+  if (!toolsWarnEl) return;
+  toolsWarnEl.textContent = msg;
+  toolsWarnEl.hidden = false;
+}
+
+function hideToolsWarning() {
+  if (!toolsWarnEl) return;
+  toolsWarnEl.hidden = true;
+  toolsWarnEl.textContent = "";
+}
+
+// Render from any object carrying granted_tools / inherit_host_tools:
+// a create response, an AgentSession handle, or a run_meta frame.
+// Older hosts/SDK handles may omit inherit_host_tools — fall back to the
+// "*" sentinel, which the host emits iff the inherit grant is on.
+function renderToolSurface(info) {
+  if (!toolsEl) return;
+  if (!info || !Array.isArray(info.granted_tools)) {
+    toolsEl.textContent = "tools: (unknown — run or re-create to find out)";
+    hideToolsWarning();
+    return;
+  }
+  const granted = info.granted_tools;
+  const inherit = info.inherit_host_tools ?? granted.includes("*");
+  if (inherit) {
+    toolsEl.textContent =
+      "tools: * — inherits the user's host tools; file edits are REAL";
+    hideToolsWarning();
+  } else if (granted.length) {
+    toolsEl.textContent = `tools: ${granted.join(", ")} (sandbox allow-list)`;
+    hideToolsWarning();
+  } else {
+    toolsEl.textContent = "tools: NONE — text-only sandbox";
+    showToolsWarning(
+      "NO_TOOLS_AVAILABLE: this session resolved ZERO executable tools. " +
+        "It can only generate text — it cannot read or write local files, and any " +
+        "side effects the model claims (e.g. changed_files) will NOT have happened. " +
+        "Ask the user to enable “Let agent sessions use my tools” in the app's " +
+        "grants drawer, or use llm.complete for text-only generation."
+    );
+  }
+}
+
+// First frame of every app agent run (host ≥ 1.1.0-beta.45). Carries the
+// run's authoritative tool surface + structured warnings. Unknown to older
+// hosts — simply absent there, so this is fully backward-compatible.
+function handleRunMeta(frame) {
+  renderToolSurface(frame);
+  const tools = frame.inherit_host_tools
+    ? "* (host tools)"
+    : (frame.granted_tools || []).join(", ") || "NONE";
+  runOut.textContent += `[run_meta] run=${frame.run_id || "?"} submode=${frame.submode || "?"} tools=${tools}\n`;
+  for (const w of frame.warnings || []) {
+    showToolsWarning(`${w.code}: ${w.message}`);
+    runOut.textContent += `⚠️ ${w.code}: ${w.message}\n`;
+  }
 }
 
 // ──────────────────────────────────────────────────────────
@@ -232,6 +308,8 @@ uuidInput?.addEventListener("input", () => {
   if (sess.handle && sess.handle.app_session_uuid !== currentUuid()) {
     sess.handle = null;
     sess.runId = null;
+    // A foreign uuid's tool surface is unknown until the next run_meta.
+    renderToolSurface(null);
   }
   syncSessionButtons();
 });
@@ -247,6 +325,7 @@ function resetSession() {
   uuidInput.value = "";
   sessionListEl.replaceChildren();
   renderLifecycle(null);
+  renderToolSurface(null);
   syncSessionButtons();
 }
 
@@ -283,13 +362,17 @@ $("session-create-btn").addEventListener("click", async () => {
       sess.handle = await anna.agent.session({ submode: "auto", system_prompt: systemPrompt });
       uuid = sess.handle.app_session_uuid || null;
       // The handle carries lifecycle metadata (expires_at / max_lifetime_at /
-      // idle_ttl_seconds) straight off the create response.
+      // idle_ttl_seconds) straight off the create response, plus the
+      // runtime-accurate granted_tools — check it BEFORE running anything
+      // that's supposed to have side effects.
       renderLifecycle(sess.handle);
+      renderToolSurface(sess.handle);
     } else {
       const r = await executaSession("create", { submode: "auto", system_prompt: systemPrompt });
       sess.handle = null;
       uuid = r.app_session_uuid || null;
       renderLifecycle(r);
+      renderToolSurface(r);
     }
     setUuid(uuid || "");
   } catch (err) {
@@ -311,7 +394,10 @@ $("run-btn").addEventListener("click", async () => {
       const stream = handle.run({ content });
       for await (const frame of stream) {
         if (frame.run_id) sess.runId = frame.run_id;
-        if (frame.event === "token" && frame.text) {
+        if (frame.event === "run_meta") {
+          // Authoritative tool surface for THIS run (and zero-tools warning).
+          handleRunMeta(frame);
+        } else if (frame.event === "token" && frame.text) {
           runOut.textContent += frame.text;
         } else {
           runOut.textContent += `\n[${frame.event}] ${JSON.stringify(frame)}\n`;
@@ -325,10 +411,13 @@ $("run-btn").addEventListener("click", async () => {
         app_session_uuid: uuid,
         prompt: content,
       });
+      runOut.textContent = (r.text || JSON.stringify(r, null, 2)) + "\n";
+      // The reverse-RPC run is buffered — the run_meta frame (tool surface +
+      // NO_TOOLS_AVAILABLE warning) is in the returned frames array.
       for (const frame of r.frames || []) {
         if (frame.run_id) sess.runId = frame.run_id;
+        if (frame.event === "run_meta") handleRunMeta(frame);
       }
-      runOut.textContent = r.text || JSON.stringify(r, null, 2);
     }
   } catch (err) {
     showError("agent.session.run", err);

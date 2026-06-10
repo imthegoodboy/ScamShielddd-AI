@@ -573,7 +573,12 @@ async def _agent_session(
             "app_session_uuid": sess.uuid,
             "kind": sess.kind,
             "submode": sess.agent_submode,
+            # Runtime-ACCURATE tool surface (host ≥ 1.1.0-beta.45):
+            # ["*"] = inherits host tools; [] = TEXT-ONLY sandbox — the
+            # agent cannot read/write local files and any claimed side
+            # effects (changed_files…) would be hallucinated.
             "granted_tools": sess.granted_tools,
+            "inherit_host_tools": sess.inherit_host_tools,
             "expires_in": sess.expires_in,
         }
 

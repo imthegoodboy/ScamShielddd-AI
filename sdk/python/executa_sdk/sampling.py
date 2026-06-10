@@ -61,6 +61,7 @@ SAMPLING_ERR_MAX_CALLS_EXCEEDED = -32006
 SAMPLING_ERR_MAX_TOKENS_EXCEEDED = -32007
 SAMPLING_ERR_NOT_NEGOTIATED = -32008
 SAMPLING_ERR_USER_DENIED = -32009
+SAMPLING_ERR_UNSUPPORTED_RESPONSE_FORMAT = -32010
 
 
 class SamplingError(Exception):
@@ -144,6 +145,8 @@ class SamplingClient:
         model_preferences: Optional[dict] = None,
         include_context: str = "none",
         metadata: Optional[dict] = None,
+        response_format: Optional[dict] = None,
+        on_unsupported: Optional[str] = None,
         timeout: float = 90.0,
     ) -> dict:
         """Ask the host to run an LLM completion. Returns the host result dict.
@@ -167,6 +170,22 @@ class SamplingClient:
                 on the wire but currently dropped by the Nexus gate (no audit,
                 no logging, no propagation to token-usage records). Do not rely
                 on it for tracing until host support lands.
+            response_format:   Optional structured-output constraint. Two levels:
+                ``{"type": "json_object"}`` (L1 — JSON mode, broadly compatible)
+                or ``{"type": "json_schema", "json_schema": {"name": "...",
+                "strict": True, "schema": {...}}}`` (L2 — strict schema; the
+                host rejects it with ``SAMPLING_ERR_UNSUPPORTED_RESPONSE_FORMAT``
+                (-32010) when the selected model lacks the capability, unless
+                ``on_unsupported`` opts into a downgrade). The response is still
+                a ``content.text`` string — parse it yourself; the host adds an
+                informational ``_meta.responseFormat.structuredValid`` flag.
+                Schema hard limits (host-enforced): ≤32KB serialized, depth ≤8,
+                ≤512 nodes, name ``^[a-zA-Z0-9_-]{1,64}$``.
+            on_unsupported:    What the host should do when the selected model
+                does not support the requested ``response_format`` level:
+                ``"error"`` (default — fail with -32010), ``"json_object"``
+                (downgrade to L1 JSON mode) or ``"text"`` (drop the constraint).
+                Check ``_meta.responseFormat.downgraded`` to detect a downgrade.
             timeout:           Client-side wall-clock seconds before raising
                 ``asyncio.TimeoutError``. Also propagated to the host on the
                 wire as ``_clientTimeoutS`` so that matrix-agent (HTTP) and
@@ -210,6 +229,10 @@ class SamplingClient:
             params["modelPreferences"] = model_preferences
         if metadata:
             params["metadata"] = metadata
+        if response_format is not None:
+            params["responseFormat"] = response_format
+        if on_unsupported is not None:
+            params["onUnsupported"] = on_unsupported
 
         future: asyncio.Future[dict] = loop.create_future()
         with self._lock:

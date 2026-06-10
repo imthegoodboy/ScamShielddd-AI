@@ -90,6 +90,12 @@ class AgentSession:
     agent_submode: Optional[str]
     fixed_client_id: Optional[str]
     granted_tools: List[str]
+    # True when the session inherits the user's host tools (files, browser,
+    # commands…) — in which case granted_tools is the ["*"] sentinel. When
+    # False with an EMPTY granted_tools, the session is TEXT-ONLY: it cannot
+    # touch local files and any claimed side effects are hallucinated.
+    # Hosts < 1.1.0-beta.45 omit the field; we then infer it from "*".
+    inherit_host_tools: bool = False
     thread_id: Optional[str] = None
     system_prompt: Optional[str] = None
     _client: "AgentSessionClient" = None  # type: ignore[assignment]
@@ -315,13 +321,17 @@ class AgentSessionClient:
             },
             timeout=timeout,
         )
+        granted = list(result.get("granted_tools") or [])
         sess = AgentSession(
             uuid=result["app_session_uuid"],
             expires_in=int(result.get("expires_in") or ttl_seconds),
             kind=str(result.get("kind") or kind),
             agent_submode=result.get("agent_submode"),
             fixed_client_id=result.get("fixed_client_id"),
-            granted_tools=list(result.get("granted_tools") or []),
+            granted_tools=granted,
+            inherit_host_tools=bool(
+                result.get("inherit_host_tools", "*" in granted)
+            ),
             thread_id=result.get("thread_id"),
             system_prompt=result.get("system_prompt"),
         )

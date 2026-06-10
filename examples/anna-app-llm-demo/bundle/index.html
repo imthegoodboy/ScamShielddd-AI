@@ -19,7 +19,11 @@
         (create/run/cancel/history/refresh/delete/list)
         over <strong>both</strong> the HOST API and the Reverse RPC transports,
         including the <strong>session lifecycle</strong> (sliding idle window,
-        token-free release, resume-by-uuid after reload).
+        token-free release, resume-by-uuid after reload) and the
+        <strong>runtime-accurate tool surface</strong>
+        (<code>granted_tools</code> / <code>inherit_host_tools</code> on create
+        + the <code>run_meta</code> first frame with its
+        <code>NO_TOOLS_AVAILABLE</code> warning).
       </p>
     </header>
 
@@ -101,6 +105,8 @@
       </div>
       <p class="muted" id="session-uuid-status">no session</p>
       <p class="muted lifecycle" id="session-lifecycle">lifecycle: (none)</p>
+      <p class="muted lifecycle" id="session-tools">tools: (unknown — run or re-create to find out)</p>
+      <div id="tools-warning" class="out warn" hidden></div>
       <textarea id="run-input" rows="2">What is 12 × 13?</textarea>
       <div class="btn-row">
         <button id="run-btn" disabled>run (streamed)</button>

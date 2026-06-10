@@ -30,6 +30,25 @@ The UI also surfaces the session's **lifecycle** (`expires_at`,
 idle window** slide forward on every successful call and **refresh**
 renew it on demand.
 
+It also demonstrates the **runtime-accurate tool surface** (host ≥
+1.1.0-beta.45). `session.create` returns the tools the session can
+*really* execute — not the manifest-declared advisory list:
+
+- `granted_tools: ["*"]` / `inherit_host_tools: true` — the session
+  inherits the user's host tools (files, browser, commands…); side
+  effects like file edits are **real**.
+- `granted_tools: [a, b]` — an explicit sandbox allow-list.
+- `granted_tools: []` — **text-only**: the agent cannot touch local
+  files, and any `changed_files` the model claims are hallucinated
+  (forum `/t/86`).
+
+Every agent run additionally opens with a **`run_meta` frame** carrying
+the same fields plus a structured `warnings` list — the app checks it
+for `NO_TOOLS_AVAILABLE` and shows a banner telling the user to enable
+"Let agent sessions use my tools" in the app's grants drawer. Check
+this **before** trusting any side effects an agent run claims to have
+made.
+
 Used as a smoke test for the **anna server**'s
 `docs/design/app-llm-and-agent-access.md` Phase 6 deliverables and the
 Executa v2 sampling surface.
