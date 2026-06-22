@@ -54,7 +54,7 @@ jobs:
         run: |
           out="$(printf '%s\n' '{"jsonrpc":"2.0","method":"describe","id":1}' | "./dist/$TOOL_ID" 2>/dev/null)"
           echo "$out"
-          printf '%s' "$out" | python -c "import json,os,sys; d=json.load(sys.stdin); assert d['result']['name'] == os.environ['TOOL_ID']"
+          printf '%s' "$out" | python -c "import json,sys; d=json.load(sys.stdin); assert d['result']['display_name'] == 'ScamShield Analyzer'; assert d['result']['tools'][0]['name'] == 'investigate'"
 
       - name: Package binary
         working-directory: ${{ env.EXECUTA_DIR }}/dist
@@ -74,6 +74,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.release.tag_name || inputs.tag }}
+          overwrite_files: true
           files: |
             ${{ env.EXECUTA_DIR }}/dist/${{ env.TOOL_ID }}-${{ matrix.platform }}.tar.gz
             ${{ env.EXECUTA_DIR }}/dist/${{ env.TOOL_ID }}-${{ matrix.platform }}.tar.gz.sha256
@@ -125,4 +126,5 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.release.tag_name || inputs.tag }}
+          overwrite_files: true
           files: dist-anna/*.tar.gz
