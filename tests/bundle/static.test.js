@@ -32,4 +32,11 @@ describe("ScamShield Anna app static contract", () => {
     expect(css).not.toMatch(/#[0-9a-fA-F]{3,8}/);
     expect(css).not.toMatch(/transition:\s*all/);
   });
+
+  it("keeps Anna LLM responses useful when provider text is empty", () => {
+    const js = read("bundle/app.js");
+    expect(js).toContain("function extractLlmText");
+    expect(js).toContain("function fallbackAgentNote");
+    expect(js).not.toContain("Anna returned an empty note.");
+  });
 });

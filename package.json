@@ -1,7 +1,7 @@
 {
   "name": "scamshield-ai",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "ScamShield AI — Anna App fraud investigation workbench.",
   "type": "module",
   "scripts": {

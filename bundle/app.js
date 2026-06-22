@@ -292,6 +292,48 @@ function unwrapToolReply(reply) {
   return reply.data || null;
 }
 
+function extractLlmText(response) {
+  const candidates = [
+    response?.content,
+    response?.message?.content,
+    response?.result?.content,
+    response?.data?.content,
+    response?.text,
+    response?.output_text,
+    response?.result?.text,
+    response?.data?.text,
+    response?.choices?.[0]?.message?.content,
+    response?.choices?.[0]?.text,
+  ];
+  for (const candidate of candidates) {
+    const text = textFromContent(candidate);
+    if (text) return text;
+  }
+  return "";
+}
+
+function textFromContent(content) {
+  if (!content) return "";
+  if (typeof content === "string") return content.trim();
+  if (Array.isArray(content)) {
+    return content.map(textFromContent).filter(Boolean).join("\n").trim();
+  }
+  if (typeof content === "object") {
+    return textFromContent(content.text || content.value || content.content || content.message);
+  }
+  return "";
+}
+
+function fallbackAgentNote(report) {
+  const findings = (report.findings || []).slice(0, 3).map((finding) => finding.title.toLowerCase());
+  const actions = (report.recommendations || []).slice(0, 2).map((rec) => rec.action.toLowerCase());
+  const limitations = (report.limitations || []).slice(0, 2);
+  const why = findings.length ? findings.join(", ") : "limited but suspicious evidence";
+  const next = actions.length ? actions.join("; ") : "pause and verify through an official channel";
+  const missing = limitations.length ? limitations.join(" ") : "Missing live reputation and authority data should be verified independently.";
+  return `Evidence-based investigator note: ${report.headline || "Suspicious content"} with ${report.score ?? "--"}% risk. The main signals are ${why}. Next step: ${next}. Evidence gap: ${missing}`;
+}
+
 async function synthesizeWithAnna(interactive) {
   if (!currentReport || !anna?.llm?.complete) {
     if (interactive) toast("Anna LLM synthesis is unavailable in this runtime.");
@@ -319,9 +361,9 @@ async function synthesizeWithAnna(interactive) {
       modelPreferences: { speedPriority: 0.45, intelligencePriority: 0.75 },
       metadata: { source: "scamshield-ai", report_id: currentReport.id },
     });
-    const text = response?.content?.text || response?.text || "";
-    currentReport.agent_note = text.trim();
-    els.agentNote.textContent = currentReport.agent_note || "Anna returned an empty note.";
+    const text = extractLlmText(response);
+    currentReport.agent_note = text || fallbackAgentNote(currentReport);
+    els.agentNote.textContent = currentReport.agent_note;
     activateTab("agent");
     createPdfUrl(currentReport);
   } catch (err) {
@@ -362,7 +404,7 @@ async function extractImageText() {
       maxTokens: 700,
       temperature: 0,
     });
-    const text = response?.content?.text || "";
+    const text = extractLlmText(response);
     if (text && text !== "UNREADABLE") {
       els.evidence.value = text.trim();
       setStatus("Screenshot text extracted.", "");
@@ -399,7 +441,7 @@ async function decodeQrImage() {
         maxTokens: 300,
         temperature: 0,
       });
-      const text = response?.content?.text || "";
+      const text = extractLlmText(response);
       if (text && text !== "UNREADABLE") {
         els.evidence.value = text.trim();
         setStatus("QR code decoded with Anna.", "");

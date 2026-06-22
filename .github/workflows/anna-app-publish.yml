@@ -15,7 +15,7 @@ on:
       version:
         description: "Anna app version to cut or release"
         type: string
-        default: "0.1.0"
+        default: "0.1.1"
 
 permissions:
   contents: read
