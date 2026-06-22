@@ -8,7 +8,7 @@
   "type": "python",
   "enabled": true,
   "distribution": {
-    "active": "local",
+    "active": "binary",
     "profiles": {
       "local": {
         "type": "local",
@@ -16,6 +16,7 @@
       },
       "binary": {
         "type": "binary",
+        "package_name": "tool-test-scamshield-analyzer-12345678",
         "executable_name": "tool-test-scamshield-analyzer-12345678",
         "supports_protocol": true,
         "binary_urls": {

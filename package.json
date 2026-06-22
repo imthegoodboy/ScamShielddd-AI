@@ -1,7 +1,7 @@
 {
   "name": "scamshield-ai",
   "private": true,
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "ScamShield AI — Anna App fraud investigation workbench.",
   "type": "module",
   "scripts": {
@@ -15,9 +15,9 @@
     "test:all": "npm run test && npm run validate && npm run test:e2e"
   },
   "devDependencies": {
-    "@anna-ai/cli": "^0.1.22",
-    "@playwright/test": "^1.54.1",
+    "@anna-ai/cli": "^0.1.30",
+    "@playwright/test": "^1.61.0",
     "http-server": "^14.1.1",
-    "vitest": "^2.1.0"
+    "vitest": "^4.1.9"
   }
 }
