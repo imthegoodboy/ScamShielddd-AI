@@ -1,49 +1,46 @@
-name: anna-app
+name: ScamShield Anna App CI
 
 on:
   push:
     branches: [main]
-    paths:
-      - "examples/anna-app-focus-flow/**"
   pull_request:
-    paths:
-      - "examples/anna-app-focus-flow/**"
+  workflow_dispatch:
 
-defaults:
-  run:
-    working-directory: examples/anna-app-focus-flow
+permissions:
+  contents: read
+
+concurrency:
+  group: scamshield-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  validate:
+  verify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: "22" }
-      - run: corepack enable
-      - run: pnpm install
-      - run: pnpm exec anna-app validate --strict
-      - run: pnpm exec anna-app fixture verify fixtures/*.jsonl
 
-  bundle-tests:
-    runs-on: ubuntu-latest
-    needs: validate
-    steps:
-      - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: "22" }
-      - run: corepack enable
-      - run: pnpm install
-      - run: pnpm test
+        with:
+          node-version: "22"
+          cache: npm
 
-  plugin-tests:
-    runs-on: ubuntu-latest
-    needs: validate
-    defaults:
-      run:
-        working-directory: examples/anna-app-focus-flow/executas/focus-session-python
-    steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v3
-      - run: uv sync --extra dev
-      - run: uv run pytest ../../tests/plugin -v
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - run: npm ci
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Unit and static tests
+        run: npm run test
+
+      - name: Anna fixture verification
+        run: npm run fixture:verify
+
+      - name: Anna strict validation
+        run: npm run validate
+
+      - name: Browser QA
+        run: npm run test:e2e

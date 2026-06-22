@@ -1,0 +1,109 @@
+{
+  "schema": 2,
+  "permissions": [
+    "tools.invoke",
+    "llm.complete",
+    "chat.write_message",
+    "storage.read",
+    "storage.write",
+    "ui.svg"
+  ],
+  "required_executas": [
+    {
+      "tool_id": "bundled:scamshield-analyzer",
+      "min_version": "0.1.0",
+      "version": "latest"
+    }
+  ],
+  "optional_executas": [],
+  "system_prompt_addendum": "The user has ScamShield AI open. Treat the ScamShield Analyzer Executa as the source of truth for findings, risk score, evidence, limitations, and recommendations. Do not invent evidence, domain age, breach data, report counts, or authority claims. If the user asks whether something is safe, prefer calling the bundled analyzer first. If evidence is incomplete, state what is missing and give conservative next actions. Never ask for provider API keys; Anna owns hosted LLM/sampling.",
+  "user_message_prefix_template": "[ScamShield AI] {user_message}",
+  "tags": [
+    "security",
+    "fraud",
+    "phishing",
+    "consumer-safety",
+    "investigation"
+  ],
+  "ui": {
+    "bundle": {
+      "format": "static-spa",
+      "entry": "index.html",
+      "external_origins": []
+    },
+    "views": [
+      {
+        "name": "main",
+        "title": "ScamShield AI",
+        "default": true,
+        "entry": "index.html",
+        "min_size": {
+          "w": 360,
+          "h": 560
+        },
+        "default_size": {
+          "w": 1160,
+          "h": 820
+        },
+        "max_size": {
+          "w": 1600,
+          "h": 1200
+        },
+        "resizable": true,
+        "movable": true,
+        "single_instance": true,
+        "icon": "icon.svg",
+        "summary_template": "ScamShield AI investigation workbench with current scan mode, risk score, reasons, recommendations, and saved history."
+      }
+    ],
+    "host_api": {
+      "tools": [
+        "required:bundled:scamshield-analyzer"
+      ],
+      "llm": [
+        "complete"
+      ],
+      "chat": [
+        "write_message"
+      ],
+      "storage": [
+        "get",
+        "set",
+        "delete",
+        "list"
+      ],
+      "window": [
+        "set_title"
+      ]
+    },
+    "csp_overrides": {
+      "img-src": [
+        "'self'",
+        "data:",
+        "blob:"
+      ],
+      "font-src": [
+        "'self'",
+        "data:"
+      ],
+      "style-src": [
+        "'self'"
+      ],
+      "script-src": [
+        "'self'"
+      ],
+      "connect-src": [
+        "'self'",
+        "https:"
+      ]
+    },
+    "state_merge": "last_writer_wins"
+  },
+  "dev": {
+    "fixtures": [
+      "fixtures/*.jsonl"
+    ],
+    "seed_storage": {},
+    "user_id": 1
+  }
+}

@@ -11,6 +11,9 @@ sea-prep/
 .venv/
 .DS_Store
 dist-anna/
+test-results/
+playwright-report/
+artifacts/
 
 # Compiled Go example binaries
 examples/go/sampling-tool/sampling-tool

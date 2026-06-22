@@ -1,0 +1,26 @@
+{
+  "slug": "scamshield-analyzer",
+  "name": "ScamShield Analyzer",
+  "version": "0.1.0",
+  "executa_type": "tool",
+  "description": "Deterministic fraud investigation engine for ScamShield AI. Scores messages, URLs, emails, job offers, investment pitches, QR contents, and screenshot OCR text.",
+  "tool_id": "tool-test-scamshield-analyzer-12345678",
+  "type": "python",
+  "enabled": true,
+  "distribution": {
+    "active": "local",
+    "profiles": {
+      "local": {
+        "type": "local",
+        "supports_protocol": true
+      },
+      "binary": {
+        "type": "binary",
+        "package_name": "tool-test-scamshield-analyzer-12345678",
+        "executable_name": "tool-test-scamshield-analyzer-12345678",
+        "supports_protocol": true,
+        "binary_urls": {}
+      }
+    }
+  }
+}

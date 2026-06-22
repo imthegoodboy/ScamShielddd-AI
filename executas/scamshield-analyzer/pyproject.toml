@@ -1,0 +1,23 @@
+[project]
+name = "tool-test-scamshield-analyzer-12345678"
+version = "0.1.0"
+description = "ScamShield Analyzer Executa for the ScamShield AI Anna App"
+requires-python = ">=3.10"
+authors = [{ name = "ScamShield AI" }]
+license = { text = "MIT" }
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8"
+]
+
+[project.scripts]
+"tool-test-scamshield-analyzer-12345678" = "scamshield_analyzer:main"
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = ["scamshield_analyzer"]

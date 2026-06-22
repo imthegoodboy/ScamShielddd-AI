@@ -1,0 +1,18 @@
+{
+  "date": "2026-06-22",
+  "framework": "Anna App static SPA",
+  "fontStack": "No prior app font stack at root; ScamShield introduces Geist + IBM Plex Sans + JetBrains Mono tokens.",
+  "palette": "No prior design tokens at root; ScamShield introduces OKLCH light technical palette.",
+  "motion": "No prior motion library at root; ScamShield uses CSS transform/opacity only.",
+  "spacing": "No prior spacing scale at root; ScamShield introduces 4pt semantic spacing tokens.",
+  "preserve": [
+    "Existing cloned examples remain intact"
+  ],
+  "introduce": [
+    "Workbench macrostructure",
+    "N5 floating app nav",
+    "Ft2 status footer",
+    "Risk radar visualization",
+    "Eight-state interactive controls"
+  ]
+}

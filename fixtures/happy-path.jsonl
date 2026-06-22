@@ -1,0 +1,5 @@
+{"t":0,"kind":"meta","harness_version":"0.1","session_id":"scamshield-dev","window_uuid":"dev-wid"}
+{"t":1,"kind":"req","id":1,"ns":"window","method":"hello","args":{}}
+{"t":2,"kind":"res","id":1,"ok":true,"result":{"wid":"dev-wid","user_id":1}}
+{"t":20,"kind":"req","id":2,"ns":"tools","method":"invoke","args":{"tool_id":"tool-test-scamshield-analyzer-12345678","method":"investigate","args":{"mode":"job","text":"Pay registration fee Rs 500 immediately to receive interview letter.","allow_network":false}}}
+{"t":22,"kind":"res","id":2,"ok":true,"result":{"success":true,"tool":"investigate","data":{"score":88,"verdict":"dangerous","headline":"Likely scam job offer"}}}

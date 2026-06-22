@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content="ScamShield AI investigates suspicious messages, websites, emails, QR codes, jobs, and investment offers." />
+    <title>ScamShield AI</title>
+    <link rel="icon" type="image/svg+xml" href="icon.svg" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <svg aria-hidden="true" class="sprite">
+      <symbol id="i-message" viewBox="0 0 24 24"><path d="M4.5 6.5h15v9.5h-8l-4.5 3v-3H4.5z" /></symbol>
+      <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" /><path d="M4 12h16M12 4a13 13 0 0 1 0 16M12 4a13 13 0 0 0 0 16" /></symbol>
+      <symbol id="i-mail" viewBox="0 0 24 24"><path d="M4.5 6.5h15v11h-15z" /><path d="m5 7 7 6 7-6" /></symbol>
+      <symbol id="i-briefcase" viewBox="0 0 24 24"><path d="M8 8V6.5A1.5 1.5 0 0 1 9.5 5h5A1.5 1.5 0 0 1 16 6.5V8" /><path d="M4.5 8h15v10.5h-15z" /><path d="M4.5 12h15" /></symbol>
+      <symbol id="i-trend" viewBox="0 0 24 24"><path d="M4 17 9 12l3 3 7-8" /><path d="M15 7h4v4" /></symbol>
+      <symbol id="i-qr" viewBox="0 0 24 24"><path d="M5 5h5v5H5zM14 5h5v5h-5zM5 14h5v5H5z" /><path d="M14 14h2v2h-2zM17 14h2v5h-2zM14 17h2v2h-2z" /></symbol>
+      <symbol id="i-image" viewBox="0 0 24 24"><path d="M4.5 5.5h15v13h-15z" /><path d="m5 16 4-4 3 3 2-2 5 5" /><circle cx="15.5" cy="9" r="1.5" /></symbol>
+      <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3.5 19 6v5.2c0 4.4-2.8 7.7-7 9.3-4.2-1.6-7-4.9-7-9.3V6z" /><path d="m8.8 12 2.1 2.1 4.4-4.6" /></symbol>
+      <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3.8 13.9 9l5.3 1.1-5.3 1.9L12 17.2 10.1 12l-5.3-1.9L10.1 9z" /></symbol>
+      <symbol id="i-copy" viewBox="0 0 24 24"><path d="M8 8h10v12H8z" /><path d="M6 16H4V4h10v2" /></symbol>
+      <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v10" /><path d="m8 10 4 4 4-4" /><path d="M5 19h14" /></symbol>
+      <symbol id="i-send" viewBox="0 0 24 24"><path d="m4 11 16-7-7 16-2-7z" /></symbol>
+    </svg>
+
+    <nav class="nav-pill" aria-label="Primary">
+      <a class="wordmark" href="#investigate" aria-label="ScamShield AI home">
+        <svg aria-hidden="true"><use href="#i-shield"></use></svg>
+        <span>ScamShield AI</span>
+      </a>
+      <div class="nav-pill__links" role="list">
+        <a class="nav-pill__link" href="#investigate">Investigate</a>
+        <a class="nav-pill__link" href="#history">History</a>
+        <a class="nav-pill__link" href="#report">Report</a>
+      </div>
+      <span class="runtime-pill" id="runtime-pill">Standalone</span>
+    </nav>
+
+    <main class="workbench" id="investigate">
+      <section class="intro-band reveal">
+        <div>
+          <p class="section-note">Fraud investigation workbench</p>
+          <h1>Check the thing before it costs you.</h1>
+        </div>
+        <p>
+          Paste a message, inspect a link, decode a QR code, or analyze an offer.
+          ScamShield returns evidence first: score, reasons, next actions, and a
+          report draft you can save.
+        </p>
+      </section>
+
+      <section class="app-grid reveal">
+        <aside class="mode-rail" aria-label="Scan modes">
+          <button class="mode-btn is-active" type="button" data-mode="message">
+            <svg aria-hidden="true"><use href="#i-message"></use></svg>
+            <span>Paste Message</span>
+          </button>
+          <button class="mode-btn" type="button" data-mode="website">
+            <svg aria-hidden="true"><use href="#i-globe"></use></svg>
+            <span>Website</span>
+          </button>
+          <button class="mode-btn" type="button" data-mode="email">
+            <svg aria-hidden="true"><use href="#i-mail"></use></svg>
+            <span>Email</span>
+          </button>
+          <button class="mode-btn" type="button" data-mode="job">
+            <svg aria-hidden="true"><use href="#i-briefcase"></use></svg>
+            <span>Job Offer</span>
+          </button>
+          <button class="mode-btn" type="button" data-mode="investment">
+            <svg aria-hidden="true"><use href="#i-trend"></use></svg>
+            <span>Investment</span>
+          </button>
+          <button class="mode-btn" type="button" data-mode="qr">
+            <svg aria-hidden="true"><use href="#i-qr"></use></svg>
+            <span>QR Code</span>
+          </button>
+          <button class="mode-btn" type="button" data-mode="screenshot">
+            <svg aria-hidden="true"><use href="#i-image"></use></svg>
+            <span>Screenshot</span>
+          </button>
+        </aside>
+
+        <section class="composer" aria-labelledby="composer-title">
+          <div class="panel-head">
+            <div>
+              <h2 id="composer-title">Investigation input</h2>
+              <p id="mode-helper">Paste the suspicious message exactly as received.</p>
+            </div>
+            <label class="switch">
+              <input id="network-probe" type="checkbox" />
+              <span>Probe HTTPS</span>
+            </label>
+          </div>
+
+          <div class="field-row is-hidden" data-field="url">
+            <label for="url-input">Website or link</label>
+            <input id="url-input" type="url" inputmode="url" autocomplete="off" placeholder="https://example.com/path" />
+            <p class="field-help">Use the exact link, including strange spelling or digits.</p>
+          </div>
+
+          <div class="field-row field-row--split is-hidden" data-field="email">
+            <div>
+              <label for="sender-input">Sender</label>
+              <input id="sender-input" type="text" autocomplete="off" placeholder="support@example.com" />
+              <p class="field-help">From address, sender name, or handle.</p>
+            </div>
+            <div>
+              <label for="subject-input">Subject</label>
+              <input id="subject-input" type="text" autocomplete="off" placeholder="Account alert" />
+              <p class="field-help">Optional but useful.</p>
+            </div>
+          </div>
+
+          <div class="drop-zone is-hidden" data-field="file">
+            <input id="file-input" type="file" accept="image/*" />
+            <div>
+              <strong id="file-label">Upload screenshot or QR image</strong>
+              <span id="file-meta">PNG, JPG, WEBP. Images stay local unless you ask Anna to inspect them.</span>
+            </div>
+            <button class="btn btn--quiet" id="extract-btn" type="button">Extract with Anna</button>
+            <button class="btn btn--quiet" id="decode-qr-btn" type="button">Decode QR</button>
+          </div>
+
+          <div class="field-row">
+            <label for="evidence-input" id="evidence-label">Message text</label>
+            <textarea id="evidence-input" spellcheck="true" placeholder="Congratulations! You have won Rs 50,000. Click this link immediately..."></textarea>
+            <p class="field-help" id="text-help">Include sender text, payment details, links, phone numbers, and any deadline language.</p>
+          </div>
+
+          <div class="sample-strip" aria-label="Sample investigations">
+            <button class="sample-btn" type="button" data-sample="job">Job fee sample</button>
+            <button class="sample-btn" type="button" data-sample="website">Lookalike URL</button>
+            <button class="sample-btn" type="button" data-sample="investment">Return promise</button>
+          </div>
+
+          <div class="command-row">
+            <button class="btn btn--primary" id="investigate-btn" type="button">
+              <svg aria-hidden="true"><use href="#i-shield"></use></svg>
+              <span>Investigate</span>
+            </button>
+            <button class="btn btn--secondary" id="agent-btn" type="button" disabled>
+              <svg aria-hidden="true"><use href="#i-spark"></use></svg>
+              <span>Ask Anna</span>
+            </button>
+            <p class="status-line" id="status-line" aria-live="polite">Ready.</p>
+          </div>
+        </section>
+
+        <aside class="report-panel" id="report" aria-labelledby="report-title">
+          <div class="panel-head">
+            <div>
+              <h2 id="report-title">Live report</h2>
+              <p id="report-subtitle">Run an investigation to see the risk profile.</p>
+            </div>
+            <span class="verdict-chip" id="verdict-chip">No scan</span>
+          </div>
+
+          <div class="risk-wrap" aria-live="polite">
+            <div class="risk-meter" id="risk-meter">
+              <span id="risk-score">--</span>
+              <small>risk</small>
+            </div>
+            <div class="risk-copy">
+              <h3 id="risk-headline">Awaiting evidence</h3>
+              <p id="risk-summary">Paste or upload content, then run the analyzer.</p>
+            </div>
+          </div>
+
+          <div class="tabs" role="tablist" aria-label="Report sections">
+            <button class="tab is-active" type="button" data-tab="reasons" role="tab" aria-selected="true">Reasons</button>
+            <button class="tab" type="button" data-tab="actions" role="tab" aria-selected="false">Actions</button>
+            <button class="tab" type="button" data-tab="agent" role="tab" aria-selected="false">Agent</button>
+          </div>
+
+          <div class="tab-panels">
+            <div class="tab-panel is-active" data-panel="reasons" role="tabpanel">
+              <ol class="reason-list" id="reason-list">
+                <li class="empty-row">No findings yet.</li>
+              </ol>
+            </div>
+            <div class="tab-panel" data-panel="actions" role="tabpanel">
+              <ol class="action-list" id="action-list">
+                <li class="empty-row">Recommended actions will appear here.</li>
+              </ol>
+            </div>
+            <div class="tab-panel" data-panel="agent" role="tabpanel">
+              <div class="agent-note" id="agent-note">Anna synthesis has not run for this report.</div>
+            </div>
+          </div>
+
+          <div class="report-actions">
+            <button class="icon-action" id="save-btn" type="button" disabled title="Save report" aria-label="Save report">
+              <svg aria-hidden="true"><use href="#i-shield"></use></svg>
+            </button>
+            <button class="icon-action" id="copy-btn" type="button" disabled title="Copy actions" aria-label="Copy actions">
+              <svg aria-hidden="true"><use href="#i-copy"></use></svg>
+            </button>
+            <a class="icon-action is-disabled" id="pdf-link" href="#" download="scamshield-report.pdf" title="Download PDF" aria-label="Download PDF">
+              <svg aria-hidden="true"><use href="#i-download"></use></svg>
+            </a>
+            <button class="icon-action" id="chat-btn" type="button" disabled title="Send to Anna chat" aria-label="Send to Anna chat">
+              <svg aria-hidden="true"><use href="#i-send"></use></svg>
+            </button>
+          </div>
+        </aside>
+      </section>
+
+      <section class="history-band reveal" id="history" aria-labelledby="history-title">
+        <div class="history-head">
+          <div>
+            <h2 id="history-title">History</h2>
+            <p>Compact saved reports stay under Anna storage limits.</p>
+          </div>
+          <button class="btn btn--quiet" id="clear-history-btn" type="button">Clear history</button>
+        </div>
+        <div class="history-table" id="history-table" role="list">
+          <p class="empty-row">No saved investigations yet.</p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="foot-line">
+      <span>ScamShield AI v0.1.0</span>
+      <span id="runtime-detail">Runtime not connected.</span>
+      <span>Evidence-first. No provider keys.</span>
+    </footer>
+
+    <div class="toast-stack" id="toast-stack" aria-live="polite"></div>
+
+    <script src="anna-tool-ids.js" defer></script>
+    <script src="app.js" type="module"></script>
+  </body>
+</html>
