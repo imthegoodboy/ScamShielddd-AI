@@ -1,6 +1,6 @@
 const SDK_URL = "/static/anna-apps/_sdk/latest/index.js";
 const TOOL_HANDLE = "scamshield-analyzer";
-const DEV_FALLBACK_TOOL_ID = "tool-test-scamshield-analyzer-12345678";
+const DEV_FALLBACK_TOOL_ID = "tool-nikku696969-scamshield-analyzer-3h8p8n7j";
 const TOOL_ID =
   (typeof window !== "undefined" &&
     window.__ANNA_TOOL_IDS__ &&

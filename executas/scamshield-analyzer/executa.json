@@ -1,10 +1,10 @@
 {
   "slug": "scamshield-analyzer",
   "name": "ScamShield Analyzer",
-  "version": "0.1.1",
+  "version": "0.1.3",
   "executa_type": "tool",
   "description": "Deterministic fraud investigation engine for ScamShield AI. Scores messages, URLs, emails, job offers, investment pitches, QR contents, and screenshot OCR text.",
-  "tool_id": "tool-test-scamshield-analyzer-12345678",
+  "tool_id": "tool-nikku696969-scamshield-analyzer-3h8p8n7j",
   "type": "python",
   "enabled": true,
   "distribution": {
@@ -16,28 +16,28 @@
       },
       "binary": {
         "type": "binary",
-        "package_name": "tool-test-scamshield-analyzer-12345678",
-        "executable_name": "tool-test-scamshield-analyzer-12345678",
+        "package_name": "tool-nikku696969-scamshield-analyzer-3h8p8n7j",
+        "executable_name": "tool-nikku696969-scamshield-analyzer-3h8p8n7j",
         "supports_protocol": true,
         "binary_urls": {
           "darwin-arm64": {
-            "url": "https://github.com/imthegoodboy/ScamShielddd-AI/releases/download/scamshield-analyzer-v0.1.1/tool-test-scamshield-analyzer-12345678-darwin-arm64.tar.gz",
-            "entrypoint": "tool-test-scamshield-analyzer-12345678",
+            "url": "https://github.com/imthegoodboy/ScamShielddd-AI/releases/download/scamshield-analyzer-v0.1.3/tool-nikku696969-scamshield-analyzer-3h8p8n7j-darwin-arm64.tar.gz",
+            "entrypoint": "tool-nikku696969-scamshield-analyzer-3h8p8n7j",
             "format": "tar.gz"
           },
           "darwin-x86_64": {
-            "url": "https://github.com/imthegoodboy/ScamShielddd-AI/releases/download/scamshield-analyzer-v0.1.1/tool-test-scamshield-analyzer-12345678-darwin-x86_64.tar.gz",
-            "entrypoint": "tool-test-scamshield-analyzer-12345678",
+            "url": "https://github.com/imthegoodboy/ScamShielddd-AI/releases/download/scamshield-analyzer-v0.1.3/tool-nikku696969-scamshield-analyzer-3h8p8n7j-darwin-x86_64.tar.gz",
+            "entrypoint": "tool-nikku696969-scamshield-analyzer-3h8p8n7j",
             "format": "tar.gz"
           },
           "linux-x86_64": {
-            "url": "https://github.com/imthegoodboy/ScamShielddd-AI/releases/download/scamshield-analyzer-v0.1.1/tool-test-scamshield-analyzer-12345678-linux-x86_64.tar.gz",
-            "entrypoint": "tool-test-scamshield-analyzer-12345678",
+            "url": "https://github.com/imthegoodboy/ScamShielddd-AI/releases/download/scamshield-analyzer-v0.1.3/tool-nikku696969-scamshield-analyzer-3h8p8n7j-linux-x86_64.tar.gz",
+            "entrypoint": "tool-nikku696969-scamshield-analyzer-3h8p8n7j",
             "format": "tar.gz"
           },
           "windows-x86_64": {
-            "url": "https://github.com/imthegoodboy/ScamShielddd-AI/releases/download/scamshield-analyzer-v0.1.1/tool-test-scamshield-analyzer-12345678-windows-x86_64.zip",
-            "entrypoint": "tool-test-scamshield-analyzer-12345678.exe",
+            "url": "https://github.com/imthegoodboy/ScamShielddd-AI/releases/download/scamshield-analyzer-v0.1.3/tool-nikku696969-scamshield-analyzer-3h8p8n7j-windows-x86_64.zip",
+            "entrypoint": "tool-nikku696969-scamshield-analyzer-3h8p8n7j.exe",
             "format": "zip"
           }
         }

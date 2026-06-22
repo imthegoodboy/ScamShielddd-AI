@@ -30,12 +30,12 @@ anna-app dev --port 5184 --llm-account https://anna.partners
 The bundled Executa must have public release assets before `apps push`.
 The GitHub workflow `.github/workflows/build-release.yml` builds:
 
-- `tool-test-scamshield-analyzer-12345678-darwin-arm64.tar.gz`
-- `tool-test-scamshield-analyzer-12345678-darwin-x86_64.tar.gz`
-- `tool-test-scamshield-analyzer-12345678-linux-x86_64.tar.gz`
-- `tool-test-scamshield-analyzer-12345678-windows-x86_64.zip`
+- `tool-nikku696969-scamshield-analyzer-3h8p8n7j-darwin-arm64.tar.gz`
+- `tool-nikku696969-scamshield-analyzer-3h8p8n7j-darwin-x86_64.tar.gz`
+- `tool-nikku696969-scamshield-analyzer-3h8p8n7j-linux-x86_64.tar.gz`
+- `tool-nikku696969-scamshield-analyzer-3h8p8n7j-windows-x86_64.zip`
 
-Create or dispatch the release tag `scamshield-analyzer-v0.1.1` first.
+Create or dispatch the release tag `scamshield-analyzer-v0.1.3` first.
 
 Use production unless intentionally testing staging:
 
@@ -47,14 +47,14 @@ npm run validate
 npm run test:e2e
 npm audit --audit-level=moderate
 anna-app apps push --account $ANNA_HOST --json
-anna-app apps cut 0.1.4 --account $ANNA_HOST --json
+anna-app apps cut 0.1.5 --account $ANNA_HOST --json
 anna-app apps status scamshield-ai --account $ANNA_HOST --json
 ```
 
 Release only after explicit approval:
 
 ```powershell
-anna-app apps release 0.1.4 --account $ANNA_HOST --json
+anna-app apps release 0.1.5 --account $ANNA_HOST --json
 ```
 
 ## Runtime notes

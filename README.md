@@ -4,8 +4,8 @@ ScamShield AI is an Anna App that helps people inspect suspicious messages, link
 
 The app is built as an evidence-first fraud investigation workbench. A bundled deterministic Executa produces the risk score, findings, limitations, and recommended next actions. Anna-hosted LLM support is used only to turn that evidence into a clear investigator note when the runtime grants are available.
 
-Current app version: `0.1.4`
-Current analyzer binary release: `scamshield-analyzer-v0.1.1`
+Current app version: `0.1.5`
+Current analyzer binary release: `scamshield-analyzer-v0.1.3`
 
 Demo video : https://youtu.be/ugw6vePwF80
 
@@ -146,7 +146,7 @@ Coverage:
 The bundled analyzer is distributed through GitHub Release assets. The active analyzer release is:
 
 ```text
-scamshield-analyzer-v0.1.1
+scamshield-analyzer-v0.1.3
 ```
 
 It contains:
@@ -166,14 +166,14 @@ npm run fixture:verify
 npm run validate
 npm run test:e2e
 anna-app apps push --account $ANNA_HOST --json
-anna-app apps cut 0.1.4 --account $ANNA_HOST --json
+anna-app apps cut 0.1.5 --account $ANNA_HOST --json
 anna-app apps status scamshield-ai --account $ANNA_HOST --json
 ```
 
 Final public promotion is intentionally separate:
 
 ```powershell
-anna-app apps release 0.1.4 --account $ANNA_HOST --json
+anna-app apps release 0.1.5 --account $ANNA_HOST --json
 ```
 
 Use release promotion only after review approval.
@@ -189,4 +189,4 @@ ScamShield does not ask for OpenAI, Anna, or provider API keys. Anna host APIs p
 
 ## Status
 
-The app is production-ready for review with version `0.1.4` cut through Anna after the final verification pass. Public release remains a separate approval step.
+The app is production-ready with version `0.1.5` published through Anna after the final verification pass. The bundled analyzer is frozen to release `scamshield-analyzer-v0.1.3`, whose binary package and executable names match the server-minted production tool id.

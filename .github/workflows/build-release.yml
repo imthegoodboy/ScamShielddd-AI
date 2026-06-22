@@ -8,13 +8,13 @@ on:
       tag:
         description: "Release tag to attach assets to"
         type: string
-        default: "scamshield-analyzer-v0.1.1"
+        default: "scamshield-analyzer-v0.1.3"
 
 permissions:
   contents: write
 
 env:
-  TOOL_ID: tool-test-scamshield-analyzer-12345678
+  TOOL_ID: tool-nikku696969-scamshield-analyzer-3h8p8n7j
   EXECUTA_DIR: executas/scamshield-analyzer
 
 jobs:

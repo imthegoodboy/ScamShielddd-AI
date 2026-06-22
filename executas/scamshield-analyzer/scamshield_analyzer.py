@@ -24,8 +24,8 @@ from typing import Any
 from urllib.parse import parse_qs, unquote, urlparse
 from urllib.request import HTTPRedirectHandler, HTTPSHandler, Request, build_opener
 
-VERSION = "0.1.1"
-TOOL_NAME = "scamshield"
+VERSION = "0.1.3"
+TOOL_NAME = "tool-nikku696969-scamshield-analyzer-3h8p8n7j"
 
 MANIFEST: dict[str, Any] = {
     "display_name": "ScamShield Analyzer",
