@@ -7,6 +7,8 @@ The app is built as an evidence-first fraud investigation workbench. A bundled d
 Current app version: `0.1.4`
 Current analyzer binary release: `scamshield-analyzer-v0.1.1`
 
+Demo video : https://youtu.be/ugw6vePwF80
+
 ## Why This Exists
 
 Most scam checks fail in the moment when a user is pressured to act quickly. ScamShield gives the user a structured pause:
