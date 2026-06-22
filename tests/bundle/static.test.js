@@ -39,4 +39,28 @@ describe("ScamShield Anna app static contract", () => {
     expect(js).toContain("function fallbackAgentNote");
     expect(js).not.toContain("Anna returned an empty note.");
   });
+
+  it("declares Windows binary distribution support", () => {
+    const executa = JSON.parse(read("executas/scamshield-analyzer/executa.json"));
+    const urls = executa.distribution.profiles.binary.binary_urls;
+    expect(urls["windows-x86_64"]).toMatchObject({
+      format: "zip",
+      entrypoint: "tool-test-scamshield-analyzer-12345678.exe",
+    });
+    expect(urls["windows-x86_64"].url).toContain("windows-x86_64.zip");
+
+    const workflow = read(".github/workflows/build-release.yml");
+    expect(workflow).toContain("windows-latest");
+    expect(workflow).toContain("windows-x86_64");
+  });
+
+  it("keeps chat and PDF exports evidence-complete", () => {
+    const js = read("bundle/app.js");
+    expect(js).toContain("function chatPromptFromReport");
+    expect(js).toContain("Findings:");
+    expect(js).toContain("Recommended actions:");
+    expect(js).toContain("Limitations:");
+    expect(js).toContain("function chunkLines");
+    expect(js).not.toContain("slice(0, 58)");
+  });
 });

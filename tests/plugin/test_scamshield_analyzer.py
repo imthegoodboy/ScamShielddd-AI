@@ -2,6 +2,7 @@ import importlib.util
 from pathlib import Path
 import sys
 import unittest
+from unittest.mock import patch
 
 
 MODULE_PATH = (
@@ -49,6 +50,33 @@ class ScamShieldAnalyzerTests(unittest.TestCase):
         )
         self.assertLess(result["score"], 30)
         self.assertEqual(result["verdict"], "low_risk")
+
+    def test_network_probe_blocks_literal_private_ip(self):
+        result = scamshield.tool_investigate(
+            mode="website",
+            url="https://127.0.0.1/admin",
+            allow_network=True,
+        )
+        probe = result["url_preview"]["network_probe"]
+        self.assertFalse(probe["ok"])
+        self.assertTrue(probe["blocked"])
+        self.assertIn("non-public IP", probe["error"])
+
+    def test_network_probe_blocks_private_dns_resolution(self):
+        with patch.object(
+            scamshield.socket,
+            "getaddrinfo",
+            return_value=[(scamshield.socket.AF_INET, scamshield.socket.SOCK_STREAM, 6, "", ("10.0.0.5", 443))],
+        ):
+            result = scamshield.tool_investigate(
+                mode="website",
+                url="https://example.test",
+                allow_network=True,
+            )
+        probe = result["url_preview"]["network_probe"]
+        self.assertFalse(probe["ok"])
+        self.assertTrue(probe["blocked"])
+        self.assertIn("non-public IP space", probe["error"])
 
 
 if __name__ == "__main__":

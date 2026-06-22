@@ -8,7 +8,7 @@ on:
       tag:
         description: "Release tag to attach assets to"
         type: string
-        default: "scamshield-analyzer-v0.1.0"
+        default: "scamshield-analyzer-v0.1.1"
 
 permissions:
   contents: write
@@ -26,12 +26,19 @@ jobs:
           - os: macos-14
             platform: darwin-arm64
             python_arch: arm64
+            archive_ext: tar.gz
           - os: macos-15
             platform: darwin-x86_64
             python_arch: x64
+            archive_ext: tar.gz
           - os: ubuntu-latest
             platform: linux-x86_64
             python_arch: x64
+            archive_ext: tar.gz
+          - os: windows-latest
+            platform: windows-x86_64
+            python_arch: x64
+            archive_ext: zip
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -47,28 +54,50 @@ jobs:
 
       - name: Build binary
         working-directory: ${{ env.EXECUTA_DIR }}
-        run: pyinstaller --onefile --clean --noupx --name "$TOOL_ID" scamshield_analyzer.py
+        run: pyinstaller --onefile --clean --noupx --name "${{ env.TOOL_ID }}" scamshield_analyzer.py
 
       - name: Smoke test protocol
+        if: runner.os != 'Windows'
         working-directory: ${{ env.EXECUTA_DIR }}
         run: |
           out="$(printf '%s\n' '{"jsonrpc":"2.0","method":"describe","id":1}' | "./dist/$TOOL_ID" 2>/dev/null)"
           echo "$out"
           printf '%s' "$out" | python -c "import json,sys; d=json.load(sys.stdin); assert d['result']['display_name'] == 'ScamShield Analyzer'; assert d['result']['tools'][0]['name'] == 'investigate'"
 
+      - name: Smoke test protocol (Windows)
+        if: runner.os == 'Windows'
+        working-directory: ${{ env.EXECUTA_DIR }}
+        shell: pwsh
+        run: |
+          $out = '{"jsonrpc":"2.0","method":"describe","id":1}' | & ".\dist\${{ env.TOOL_ID }}.exe" 2>$null
+          Write-Output $out
+          $out | python -c "import json,sys; d=json.load(sys.stdin); assert d['result']['display_name'] == 'ScamShield Analyzer'; assert d['result']['tools'][0]['name'] == 'investigate'"
+
       - name: Package binary
+        if: runner.os != 'Windows'
         working-directory: ${{ env.EXECUTA_DIR }}/dist
         run: |
           asset="$TOOL_ID-${{ matrix.platform }}.tar.gz"
           tar czf "$asset" "$TOOL_ID"
           shasum -a 256 "$asset" > "$asset.sha256"
 
+      - name: Package binary (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $asset = "${{ env.TOOL_ID }}-${{ matrix.platform }}.zip"
+          $source = "${{ env.EXECUTA_DIR }}\dist\${{ env.TOOL_ID }}.exe"
+          $dest = "${{ env.EXECUTA_DIR }}\dist\$asset"
+          Compress-Archive -Path $source -DestinationPath $dest -Force
+          $hash = (Get-FileHash -Algorithm SHA256 -Path $dest).Hash.ToLowerInvariant()
+          "$hash  $asset" | Set-Content -Path "$dest.sha256" -NoNewline
+
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ env.TOOL_ID }}-${{ matrix.platform }}
           path: |
-            ${{ env.EXECUTA_DIR }}/dist/${{ env.TOOL_ID }}-${{ matrix.platform }}.tar.gz
-            ${{ env.EXECUTA_DIR }}/dist/${{ env.TOOL_ID }}-${{ matrix.platform }}.tar.gz.sha256
+            ${{ env.EXECUTA_DIR }}/dist/${{ env.TOOL_ID }}-${{ matrix.platform }}.${{ matrix.archive_ext }}
+            ${{ env.EXECUTA_DIR }}/dist/${{ env.TOOL_ID }}-${{ matrix.platform }}.${{ matrix.archive_ext }}.sha256
 
       - name: Attach to GitHub release
         uses: softprops/action-gh-release@v2
@@ -76,8 +105,8 @@ jobs:
           tag_name: ${{ github.event.release.tag_name || inputs.tag }}
           overwrite_files: true
           files: |
-            ${{ env.EXECUTA_DIR }}/dist/${{ env.TOOL_ID }}-${{ matrix.platform }}.tar.gz
-            ${{ env.EXECUTA_DIR }}/dist/${{ env.TOOL_ID }}-${{ matrix.platform }}.tar.gz.sha256
+            ${{ env.EXECUTA_DIR }}/dist/${{ env.TOOL_ID }}-${{ matrix.platform }}.${{ matrix.archive_ext }}
+            ${{ env.EXECUTA_DIR }}/dist/${{ env.TOOL_ID }}-${{ matrix.platform }}.${{ matrix.archive_ext }}.sha256
 
   package-source:
     runs-on: ubuntu-latest

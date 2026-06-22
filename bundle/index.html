@@ -88,36 +88,40 @@
               <h2 id="composer-title">Investigation input</h2>
               <p id="mode-helper">Paste the suspicious message exactly as received.</p>
             </div>
-            <label class="switch">
-              <input id="network-probe" type="checkbox" />
-              <span>Probe HTTPS</span>
-            </label>
+            <div class="network-control">
+              <label class="switch">
+                <input id="network-probe" type="checkbox" aria-describedby="network-probe-help" />
+                <span class="switch__track" aria-hidden="true"><span class="switch__thumb"></span></span>
+                <span class="switch__label">Probe public HTTPS</span>
+              </label>
+              <p class="switch-help" id="network-probe-help">One HEAD request to public HTTPS URLs only.</p>
+            </div>
           </div>
 
           <div class="field-row is-hidden" data-field="url">
             <label for="url-input">Website or link</label>
-            <input id="url-input" type="url" inputmode="url" autocomplete="off" placeholder="https://example.com/path" />
-            <p class="field-help">Use the exact link, including strange spelling or digits.</p>
+            <input id="url-input" type="url" inputmode="url" autocomplete="off" placeholder="https://example.com/path" aria-describedby="url-help" />
+            <p class="field-help" id="url-help">Use the exact link, including strange spelling or digits.</p>
           </div>
 
           <div class="field-row field-row--split is-hidden" data-field="email">
             <div>
               <label for="sender-input">Sender</label>
-              <input id="sender-input" type="text" autocomplete="off" placeholder="support@example.com" />
-              <p class="field-help">From address, sender name, or handle.</p>
+              <input id="sender-input" type="text" autocomplete="off" placeholder="support@example.com" aria-describedby="sender-help" />
+              <p class="field-help" id="sender-help">From address, sender name, or handle.</p>
             </div>
             <div>
               <label for="subject-input">Subject</label>
-              <input id="subject-input" type="text" autocomplete="off" placeholder="Account alert" />
-              <p class="field-help">Optional but useful.</p>
+              <input id="subject-input" type="text" autocomplete="off" placeholder="Account alert" aria-describedby="subject-help" />
+              <p class="field-help" id="subject-help">Optional but useful.</p>
             </div>
           </div>
 
           <div class="drop-zone is-hidden" data-field="file">
-            <input id="file-input" type="file" accept="image/*" />
+            <input id="file-input" type="file" accept="image/png,image/jpeg,image/webp,image/gif" aria-describedby="file-meta" />
             <div>
               <strong id="file-label">Upload screenshot or QR image</strong>
-              <span id="file-meta">PNG, JPG, WEBP. Images stay local unless you ask Anna to inspect them.</span>
+              <span id="file-meta">PNG, JPG, WEBP, GIF up to 6 MB. Images stay local unless you ask Anna to inspect them.</span>
             </div>
             <button class="btn btn--quiet" id="extract-btn" type="button">Extract with Anna</button>
             <button class="btn btn--quiet" id="decode-qr-btn" type="button">Decode QR</button>
@@ -125,7 +129,7 @@
 
           <div class="field-row">
             <label for="evidence-input" id="evidence-label">Message text</label>
-            <textarea id="evidence-input" spellcheck="true" placeholder="Congratulations! You have won Rs 50,000. Click this link immediately..."></textarea>
+            <textarea id="evidence-input" spellcheck="true" placeholder="Congratulations! You have won Rs 50,000. Click this link immediately..." aria-describedby="text-help"></textarea>
             <p class="field-help" id="text-help">Include sender text, payment details, links, phone numbers, and any deadline language.</p>
           </div>
 
@@ -169,23 +173,23 @@
           </div>
 
           <div class="tabs" role="tablist" aria-label="Report sections">
-            <button class="tab is-active" type="button" data-tab="reasons" role="tab" aria-selected="true">Reasons</button>
-            <button class="tab" type="button" data-tab="actions" role="tab" aria-selected="false">Actions</button>
-            <button class="tab" type="button" data-tab="agent" role="tab" aria-selected="false">Agent</button>
+            <button class="tab is-active" id="tab-reasons" type="button" data-tab="reasons" role="tab" aria-selected="true" aria-controls="panel-reasons">Reasons</button>
+            <button class="tab" id="tab-actions" type="button" data-tab="actions" role="tab" aria-selected="false" aria-controls="panel-actions" tabindex="-1">Actions</button>
+            <button class="tab" id="tab-agent" type="button" data-tab="agent" role="tab" aria-selected="false" aria-controls="panel-agent" tabindex="-1">Agent</button>
           </div>
 
           <div class="tab-panels">
-            <div class="tab-panel is-active" data-panel="reasons" role="tabpanel">
+            <div class="tab-panel is-active" id="panel-reasons" data-panel="reasons" role="tabpanel" aria-labelledby="tab-reasons">
               <ol class="reason-list" id="reason-list">
                 <li class="empty-row">No findings yet.</li>
               </ol>
             </div>
-            <div class="tab-panel" data-panel="actions" role="tabpanel">
+            <div class="tab-panel" id="panel-actions" data-panel="actions" role="tabpanel" aria-labelledby="tab-actions" hidden>
               <ol class="action-list" id="action-list">
                 <li class="empty-row">Recommended actions will appear here.</li>
               </ol>
             </div>
-            <div class="tab-panel" data-panel="agent" role="tabpanel">
+            <div class="tab-panel" id="panel-agent" data-panel="agent" role="tabpanel" aria-labelledby="tab-agent" hidden>
               <div class="agent-note" id="agent-note">Anna synthesis has not run for this report.</div>
             </div>
           </div>
@@ -222,7 +226,7 @@
     </main>
 
     <footer class="foot-line">
-      <span>ScamShield AI v0.1.2</span>
+      <span>ScamShield AI v0.1.3</span>
       <span id="runtime-detail">Runtime not connected.</span>
       <span>Evidence-first. No provider keys.</span>
     </footer>

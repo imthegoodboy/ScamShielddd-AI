@@ -1,5 +1,5 @@
 /* Hallmark · pre-emit critique: P5 H4 E4 S5 R4 V4 */
-/* Hallmark · genre: modern-minimal · macrostructure: Workbench · theme: Quiet · enrichment: Tier-A CSS risk radar · nav: N5 · footer: Ft2 · tone: technical-reassuring */
+/* Hallmark · genre: modern-minimal · macrostructure: Workbench · theme: Quiet · palette-anchor: oklch-hue-162 security green · enrichment: Tier-A CSS risk radar · nav: N5 · footer: Ft2 · tone: technical-reassuring · contrast: pass (46-50) · slop: pass (51-60) · mobile: pass (36, 59, 61-69) */
 @import url("./tokens.css");
 
 *,
@@ -283,6 +283,7 @@ h3 {
 .panel-head p,
 .history-head p,
 .field-help,
+.switch-help,
 .status-line,
 .risk-copy p,
 .foot-line,
@@ -291,7 +292,14 @@ h3 {
   color: var(--color-muted);
 }
 
+.network-control {
+  display: grid;
+  gap: var(--space-2xs);
+  justify-items: start;
+}
+
 .switch {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: var(--space-xs);
@@ -303,10 +311,57 @@ h3 {
 }
 
 .switch input {
-  inline-size: 2.5rem;
-  block-size: 1.35rem;
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
   margin: 0;
-  accent-color: var(--color-accent);
+  opacity: 0;
+}
+
+.switch__track {
+  position: relative;
+  display: inline-grid;
+  align-items: center;
+  inline-size: 2.875rem;
+  block-size: 1.5rem;
+  border: var(--rule-hair) solid var(--color-rule-2);
+  border-radius: var(--radius-pill);
+  background: var(--color-paper-3);
+  transition:
+    background-color var(--dur-short) var(--ease-out),
+    border-color var(--dur-short) var(--ease-out);
+}
+
+.switch__thumb {
+  inline-size: 1rem;
+  block-size: 1rem;
+  margin-inline-start: var(--space-2xs);
+  border-radius: 50%;
+  background: var(--color-neutral);
+  transition:
+    transform var(--dur-short) var(--ease-in-out),
+    background-color var(--dur-short) var(--ease-out);
+}
+
+.switch input:checked + .switch__track {
+  background: var(--color-ink);
+  border-color: var(--color-ink);
+}
+
+.switch input:checked + .switch__track .switch__thumb {
+  transform: translateX(1.35rem);
+  background: var(--color-paper);
+}
+
+.switch input:focus-visible + .switch__track {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.switch-help {
+  margin: 0;
+  font-size: var(--text-xs);
+  line-height: 1.35;
 }
 
 .field-row {
@@ -690,12 +745,29 @@ textarea::placeholder {
 }
 
 .toast {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
   padding: var(--space-sm);
   color: var(--color-paper);
   background: var(--color-ink);
   border-radius: var(--radius-md);
   box-shadow: 0 1rem 2rem var(--color-shadow);
   animation: toast-in var(--dur-long) var(--ease-out) both;
+}
+
+.toast__action {
+  min-height: 2rem;
+  padding-inline: var(--space-sm);
+  color: var(--color-ink);
+  background: var(--color-paper);
+  border: 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: var(--text-sm);
+  font-weight: 650;
+  white-space: nowrap;
 }
 
 .is-hidden {
@@ -771,10 +843,8 @@ textarea:focus-visible {
 }
 
 .reveal {
-  opacity: 0;
-  transform: translateY(0.5rem);
-  animation: reveal var(--dur-long) var(--ease-out) forwards;
-  animation-delay: calc(var(--i, 0) * 70ms);
+  opacity: 1;
+  transform: none;
 }
 
 @keyframes reveal {
@@ -796,6 +866,13 @@ textarea:focus-visible {
 }
 
 @media (min-width: 40rem) {
+  .reveal {
+    opacity: 0;
+    transform: translateY(0.5rem);
+    animation: reveal var(--dur-long) var(--ease-out) forwards;
+    animation-delay: calc(var(--i, 0) * 70ms);
+  }
+
   .nav-pill {
     position: sticky;
   }
@@ -809,6 +886,11 @@ textarea:focus-visible {
   .history-head,
   .command-row {
     grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .network-control {
+    justify-items: end;
+    text-align: end;
   }
 
   .field-row--split {

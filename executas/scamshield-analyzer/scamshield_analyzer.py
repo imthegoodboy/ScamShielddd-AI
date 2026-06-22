@@ -9,6 +9,7 @@ limitations so the app never invents scam evidence.
 from __future__ import annotations
 
 import json
+import ipaddress
 import re
 import socket
 import ssl
@@ -21,9 +22,9 @@ from difflib import SequenceMatcher
 from email.utils import parseaddr
 from typing import Any
 from urllib.parse import parse_qs, unquote, urlparse
-from urllib.request import Request, urlopen
+from urllib.request import HTTPRedirectHandler, HTTPSHandler, Request, build_opener
 
-VERSION = "0.1.0"
+VERSION = "0.1.1"
 TOOL_NAME = "scamshield"
 
 MANIFEST: dict[str, Any] = {
@@ -156,6 +157,8 @@ SHORTENERS = {
     "tiny.cc",
     "wa.link",
 }
+
+UNSAFE_HOSTS = {"localhost"}
 
 RISK_KEYWORDS: list[tuple[str, int, str, str]] = [
     (r"\burgent\b|\bimmediately\b|\bact now\b|\blast chance\b|\bwithin\s+\d+\s+(minute|hour|day)s?\b", 14, "Urgency pressure", "Scammers pressure victims to act before verifying."),
@@ -394,10 +397,63 @@ def _analyze_url(url: str, text: str, allow_network: bool, findings: list[Findin
     return preview
 
 
-def _probe_https(url: str) -> dict[str, Any]:
+class _NoRedirect(HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):  # type: ignore[override]
+        return None
+
+
+def _public_ip(address: str) -> bool:
     try:
+        return ipaddress.ip_address(address).is_global
+    except ValueError:
+        return False
+
+
+def _literal_ip(host: str) -> str:
+    value = (host or "").strip("[]")
+    try:
+        return str(ipaddress.ip_address(value))
+    except ValueError:
+        return ""
+
+
+def _network_safety_error(url: str) -> str:
+    parsed = urlparse(url)
+    host = (parsed.hostname or "").strip(".").lower()
+    if parsed.scheme != "https":
+        return "Network probe only supports HTTPS URLs."
+    if not host:
+        return "Network probe requires a hostname."
+    if host in UNSAFE_HOSTS or host.endswith(".localhost"):
+        return "Network probe blocked a local hostname."
+
+    literal = _literal_ip(host)
+    if literal:
+        return "" if _public_ip(literal) else "Network probe blocked a non-public IP address."
+
+    try:
+        infos = socket.getaddrinfo(host, 443, type=socket.SOCK_STREAM)
+    except OSError as exc:
+        return f"DNS lookup failed: {exc}"
+
+    addresses = sorted({info[4][0] for info in infos if info[4]})
+    if not addresses:
+        return "DNS lookup returned no addresses."
+    if not all(_public_ip(address) for address in addresses):
+        return "Network probe blocked a hostname that resolves to non-public IP space."
+    return ""
+
+
+def _probe_https(url: str) -> dict[str, Any]:
+    safety_error = _network_safety_error(url)
+    if safety_error:
+        blocked = safety_error.startswith("Network probe blocked")
+        return {"ok": False, "blocked": blocked, "error": safety_error}
+
+    try:
+        opener = build_opener(_NoRedirect, HTTPSHandler(context=ssl.create_default_context()))
         req = Request(url, method="HEAD", headers={"User-Agent": "ScamShieldAI/0.1"})
-        with urlopen(req, timeout=4, context=ssl.create_default_context()) as res:
+        with opener.open(req, timeout=4) as res:
             return {
                 "ok": True,
                 "status": int(getattr(res, "status", 0) or 0),

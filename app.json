@@ -1,7 +1,7 @@
 {
   "slug": "scamshield-ai",
   "name": "ScamShield AI",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "tagline": "An AI fraud investigator for messages, websites, emails, QR codes, jobs, and investment pitches.",
   "description": "ScamShield AI helps everyday users investigate suspicious messages, links, emails, QR codes, job offers, and investment pitches. It combines a deterministic evidence engine with Anna-hosted LLM synthesis, gives an explainable risk score, recommends safe next actions, saves compact history, and can generate a cyber-crime report draft for the user to review.",
   "category": "utilities",

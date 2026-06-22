@@ -9,6 +9,9 @@ const TOOL_ID =
 const TOOL_METHOD = "investigate";
 const STORAGE_KEY = "scamshield:history:v1";
 const MAX_HISTORY = 18;
+const MAX_TEXT_CHARS = 12_000;
+const MAX_IMAGE_BYTES = 6 * 1024 * 1024;
+const ACCEPTED_IMAGE_TYPES = new Set(["image/png", "image/jpeg", "image/webp", "image/gif"]);
 
 const MODES = {
   message: {
@@ -161,6 +164,7 @@ function bindUi() {
   }
   for (const tab of $$(".tab")) {
     tab.addEventListener("click", () => activateTab(tab.dataset.tab || "reasons"));
+    tab.addEventListener("keydown", onTabKeydown);
   }
   els.file?.addEventListener("change", onFilePicked);
   els.investigate.addEventListener("click", onInvestigate);
@@ -224,7 +228,26 @@ function onFilePicked(event) {
       : "Use Anna extraction or paste OCR text.";
     return;
   }
+  const error = validateImageFile(selectedFile);
+  if (error) {
+    selectedFile = null;
+    event.target.value = "";
+    els.fileMeta.textContent = error;
+    setStatus(error, "error");
+    return;
+  }
   els.fileMeta.textContent = `${selectedFile.name} · ${humanBytes(selectedFile.size)}`;
+}
+
+function validateImageFile(file) {
+  if (!file) return "Choose an image before using this action.";
+  if (file.type && !ACCEPTED_IMAGE_TYPES.has(file.type)) {
+    return "Use a PNG, JPG, WEBP, or GIF image.";
+  }
+  if (file.size > MAX_IMAGE_BYTES) {
+    return `Image is ${humanBytes(file.size)}. Use an image under ${humanBytes(MAX_IMAGE_BYTES)}.`;
+  }
+  return "";
 }
 
 async function onInvestigate() {
@@ -233,8 +256,14 @@ async function onInvestigate() {
     setStatus("Add evidence before running the analyzer.", "error");
     return;
   }
+  if (payload.text.length > MAX_TEXT_CHARS) {
+    payload.text = payload.text.slice(0, MAX_TEXT_CHARS);
+    setStatus("Text is long; analyzing the first 12,000 characters.", "");
+  }
   setBusy(true);
-  setStatus("Running evidence engine...", "");
+  if (els.status.textContent !== "Text is long; analyzing the first 12,000 characters.") {
+    setStatus("Running evidence engine...", "");
+  }
   try {
     const report = await investigate(payload);
     currentReport = report;
@@ -618,10 +647,23 @@ function renderHistory() {
 }
 
 async function clearHistory() {
+  if (!historyRecords.length) {
+    toast("History is already empty.");
+    return;
+  }
+  const previousRecords = historyRecords.slice();
   historyRecords = [];
   await saveHistory(historyRecords);
   renderHistory();
-  toast("History cleared.");
+  toast("History cleared.", {
+    actionLabel: "Undo",
+    onAction: async () => {
+      historyRecords = previousRecords;
+      await saveHistory(historyRecords);
+      renderHistory();
+      toast("History restored.");
+    },
+  });
 }
 
 async function copyRecommendations() {
@@ -646,11 +688,42 @@ async function sendReportToChat() {
   }
   await anna.chat.write_message({
     role: "user",
-    content:
-      `ScamShield report ${currentReport.id}: ${currentReport.headline}. ` +
-      `Risk score ${currentReport.score}%. Please help me decide the safest next step.`,
+    content: chatPromptFromReport(currentReport),
   });
   toast("Report sent to Anna chat.");
+}
+
+function chatPromptFromReport(report) {
+  const findings = (report.findings || [])
+    .slice(0, 6)
+    .map((finding) => `- ${finding.severity}: ${finding.title} - ${finding.evidence}`)
+    .join("\n") || "- No high-confidence indicators.";
+  const actions = (report.recommendations || [])
+    .slice(0, 6)
+    .map((rec) => `- ${rec.action}: ${rec.why}`)
+    .join("\n") || "- No recommendations returned.";
+  const limitations = (report.limitations || [])
+    .slice(0, 4)
+    .map((note) => `- ${note}`)
+    .join("\n") || "- No limitations returned.";
+  return [
+    `ScamShield report ${report.id || "scan"}`,
+    `Verdict: ${report.headline || "Unknown"} (${report.score ?? "--"}% risk, ${report.confidence || "unknown"} confidence)`,
+    `Mode: ${report.mode || "scan"}`,
+    "",
+    "Findings:",
+    findings,
+    "",
+    "Recommended actions:",
+    actions,
+    "",
+    "Limitations:",
+    limitations,
+    "",
+    `Evidence excerpt: ${report.input_excerpt || "No excerpt stored."}`,
+    "",
+    "Please help me decide the safest next step using only this report evidence.",
+  ].join("\n");
 }
 
 function createPdfUrl(report) {
@@ -662,26 +735,39 @@ function createPdfUrl(report) {
 }
 
 function buildSimplePdf(report) {
-  const text = markdownFromCompact(report)
+  const lines = markdownFromCompact(report)
     .replace(/^#+\s*/gm, "")
     .split(/\r?\n/)
-    .flatMap((line) => wrapLine(line, 88))
-    .slice(0, 58);
-  const content = [
-    "BT",
-    "/F1 10 Tf",
-    "50 790 Td",
-    "14 TL",
-    ...text.map((line, i) => `${i === 0 ? "" : "T* "}${pdfText(line)} Tj`),
-    "ET",
-  ].join("\n");
-  const objects = [
-    "<< /Type /Catalog /Pages 2 0 R >>",
-    "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
-    "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>",
-    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
-    `<< /Length ${content.length} >>\nstream\n${content}\nendstream`,
-  ];
+    .flatMap((line) => wrapLine(line, 88));
+  const pages = chunkLines(lines, 50);
+  const objects = [];
+  const addObject = (body) => {
+    objects.push(body);
+    return objects.length;
+  };
+  const catalogId = addObject("");
+  const pagesId = addObject("");
+  const fontId = addObject("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>");
+  const pageIds = [];
+
+  pages.forEach((pageLines, index) => {
+    const pageContent = [
+      "BT",
+      "/F1 10 Tf",
+      "50 790 Td",
+      "14 TL",
+      ...pageLines.map((line, i) => `${i === 0 ? "" : "T* "}${pdfText(line)} Tj`),
+      "T*",
+      `${pdfText(`Page ${index + 1} of ${pages.length}`)} Tj`,
+      "ET",
+    ].join("\n");
+    const contentId = addObject(`<< /Length ${byteLength(pageContent)} >>\nstream\n${pageContent}\nendstream`);
+    const pageId = addObject(`<< /Type /Page /Parent ${pagesId} 0 R /MediaBox [0 0 612 842] /Resources << /Font << /F1 ${fontId} 0 R >> >> /Contents ${contentId} 0 R >>`);
+    pageIds.push(pageId);
+  });
+
+  objects[catalogId - 1] = `<< /Type /Catalog /Pages ${pagesId} 0 R >>`;
+  objects[pagesId - 1] = `<< /Type /Pages /Kids [${pageIds.map((id) => `${id} 0 R`).join(" ")}] /Count ${pageIds.length} >>`;
   let pdf = "%PDF-1.4\n";
   const offsets = [0];
   for (let i = 0; i < objects.length; i++) {
@@ -697,8 +783,20 @@ function buildSimplePdf(report) {
   return new TextEncoder().encode(pdf);
 }
 
+function chunkLines(lines, pageSize) {
+  const chunks = [];
+  for (let i = 0; i < lines.length; i += pageSize) {
+    chunks.push(lines.slice(i, i + pageSize));
+  }
+  return chunks.length ? chunks : [["ScamShield AI report"]];
+}
+
 function pdfText(text) {
   return `(${String(text).replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)")})`;
+}
+
+function byteLength(text) {
+  return new TextEncoder().encode(text).length;
 }
 
 function markdownFromCompact(report) {
@@ -718,6 +816,9 @@ function markdownFromCompact(report) {
     "Recommended actions",
     ...(report.recommendations || []).map((r) => `- ${r.action}: ${r.why}`),
   ];
+  if (report.limitations?.length) {
+    lines.push("", "Limitations", ...(report.limitations || []).map((note) => `- ${note}`));
+  }
   if (report.agent_note) lines.push("", "Anna note", report.agent_note);
   return lines.join("\n");
 }
@@ -739,14 +840,36 @@ function wrapLine(line, width) {
   return lines;
 }
 
-function activateTab(name) {
+function onTabKeydown(event) {
+  const tabs = $$(".tab");
+  const currentIndex = tabs.indexOf(event.currentTarget);
+  if (currentIndex < 0) return;
+  const keyMap = {
+    ArrowRight: (currentIndex + 1) % tabs.length,
+    ArrowDown: (currentIndex + 1) % tabs.length,
+    ArrowLeft: (currentIndex - 1 + tabs.length) % tabs.length,
+    ArrowUp: (currentIndex - 1 + tabs.length) % tabs.length,
+    Home: 0,
+    End: tabs.length - 1,
+  };
+  if (!(event.key in keyMap)) return;
+  event.preventDefault();
+  const next = tabs[keyMap[event.key]];
+  activateTab(next.dataset.tab || "reasons", { focus: true });
+}
+
+function activateTab(name, options = {}) {
   for (const tab of $$(".tab")) {
     const active = tab.dataset.tab === name;
     tab.classList.toggle("is-active", active);
     tab.setAttribute("aria-selected", String(active));
+    tab.tabIndex = active ? 0 : -1;
+    if (active && options.focus) tab.focus({ preventScroll: true });
   }
   for (const panel of $$(".tab-panel")) {
-    panel.classList.toggle("is-active", panel.dataset.panel === name);
+    const active = panel.dataset.panel === name;
+    panel.classList.toggle("is-active", active);
+    panel.hidden = !active;
   }
 }
 
@@ -761,12 +884,25 @@ function setStatus(text, kind) {
   else delete els.status.dataset.kind;
 }
 
-function toast(message) {
+function toast(message, options = {}) {
   const el = document.createElement("div");
   el.className = "toast";
-  el.textContent = message;
+  const text = document.createElement("span");
+  text.textContent = message;
+  el.appendChild(text);
+  if (options.actionLabel && typeof options.onAction === "function") {
+    const action = document.createElement("button");
+    action.className = "toast__action";
+    action.type = "button";
+    action.textContent = options.actionLabel;
+    action.addEventListener("click", async () => {
+      await options.onAction();
+      el.remove();
+    }, { once: true });
+    el.appendChild(action);
+  }
   els.toastStack.appendChild(el);
-  setTimeout(() => el.remove(), 4500);
+  setTimeout(() => el.remove(), options.duration || 7000);
 }
 
 function labelVerdict(verdict) {
@@ -801,6 +937,8 @@ function escapeHtml(value) {
 }
 
 async function fileToDataUrl(file) {
+  const error = validateImageFile(file);
+  if (error) throw new Error(error);
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(String(reader.result || ""));

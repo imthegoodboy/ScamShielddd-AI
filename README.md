@@ -78,11 +78,11 @@ What those cover:
 - `npm run test`: bundle contract tests plus Python Executa unit tests.
 - `npm run fixture:verify`: Anna fixture replay.
 - `npm run validate`: strict Anna app schema validation.
-- `npm run test:e2e`: browser investigation flow, PDF generation, save history, and responsive overflow checks.
+- `npm run test:e2e`: browser investigation flow, PDF generation, save history, keyboard tabs, image upload limits, and responsive overflow checks.
 
 ## Anna Deployment
 
-Production publish depends on GitHub Release binaries for the bundled Executa. The release workflow `.github/workflows/build-release.yml` builds and attaches the three assets referenced by `executas/scamshield-analyzer/executa.json` under tag `scamshield-analyzer-v0.1.0`. The current Anna app bundle version is `0.1.2`.
+Production publish depends on GitHub Release binaries for the bundled Executa. The release workflow `.github/workflows/build-release.yml` builds and attaches the four assets referenced by `executas/scamshield-analyzer/executa.json` under tag `scamshield-analyzer-v0.1.1`. The current Anna app bundle version is `0.1.3`.
 
 Push and cut through Anna only after local gates pass:
 
@@ -93,14 +93,14 @@ npm run fixture:verify
 npm run validate
 npm run test:e2e
 anna-app apps push --account $ANNA_HOST --json
-anna-app apps cut 0.1.2 --account $ANNA_HOST --json
+anna-app apps cut 0.1.3 --account $ANNA_HOST --json
 anna-app apps status scamshield-ai --account $ANNA_HOST --json
 ```
 
 Release is intentionally separate:
 
 ```powershell
-anna-app apps release 0.1.2 --account $ANNA_HOST --json
+anna-app apps release 0.1.3 --account $ANNA_HOST --json
 ```
 
 The GitHub Actions workflow `.github/workflows/anna-app-publish.yml` can run the same gate and then perform `push`, `cut`, or `release` when `ANNA_APP_PAT` is configured as a repository secret.

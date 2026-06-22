@@ -31,8 +31,9 @@ The GitHub workflow `.github/workflows/build-release.yml` builds:
 - `tool-test-scamshield-analyzer-12345678-darwin-arm64.tar.gz`
 - `tool-test-scamshield-analyzer-12345678-darwin-x86_64.tar.gz`
 - `tool-test-scamshield-analyzer-12345678-linux-x86_64.tar.gz`
+- `tool-test-scamshield-analyzer-12345678-windows-x86_64.zip`
 
-Create or dispatch the release tag `scamshield-analyzer-v0.1.0` first.
+Create or dispatch the release tag `scamshield-analyzer-v0.1.1` first.
 
 Use production unless intentionally testing staging:
 
@@ -42,14 +43,14 @@ npm test
 npm run validate
 npm run test:e2e
 anna-app apps push --account $ANNA_HOST --json
-anna-app apps cut 0.1.2 --account $ANNA_HOST --json
+anna-app apps cut 0.1.3 --account $ANNA_HOST --json
 anna-app apps status scamshield-ai --account $ANNA_HOST --json
 ```
 
 Release only after explicit approval:
 
 ```powershell
-anna-app apps release 0.1.2 --account $ANNA_HOST --json
+anna-app apps release 0.1.3 --account $ANNA_HOST --json
 ```
 
 ## Runtime notes

@@ -1,7 +1,7 @@
 {
   "slug": "scamshield-analyzer",
   "name": "ScamShield Analyzer",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "executa_type": "tool",
   "description": "Deterministic fraud investigation engine for ScamShield AI. Scores messages, URLs, emails, job offers, investment pitches, QR contents, and screenshot OCR text.",
   "tool_id": "tool-test-scamshield-analyzer-12345678",
@@ -21,19 +21,24 @@
         "supports_protocol": true,
         "binary_urls": {
           "darwin-arm64": {
-            "url": "https://github.com/imthegoodboy/ScamShielddd-AI/releases/download/scamshield-analyzer-v0.1.0/tool-test-scamshield-analyzer-12345678-darwin-arm64.tar.gz",
+            "url": "https://github.com/imthegoodboy/ScamShielddd-AI/releases/download/scamshield-analyzer-v0.1.1/tool-test-scamshield-analyzer-12345678-darwin-arm64.tar.gz",
             "entrypoint": "tool-test-scamshield-analyzer-12345678",
             "format": "tar.gz"
           },
           "darwin-x86_64": {
-            "url": "https://github.com/imthegoodboy/ScamShielddd-AI/releases/download/scamshield-analyzer-v0.1.0/tool-test-scamshield-analyzer-12345678-darwin-x86_64.tar.gz",
+            "url": "https://github.com/imthegoodboy/ScamShielddd-AI/releases/download/scamshield-analyzer-v0.1.1/tool-test-scamshield-analyzer-12345678-darwin-x86_64.tar.gz",
             "entrypoint": "tool-test-scamshield-analyzer-12345678",
             "format": "tar.gz"
           },
           "linux-x86_64": {
-            "url": "https://github.com/imthegoodboy/ScamShielddd-AI/releases/download/scamshield-analyzer-v0.1.0/tool-test-scamshield-analyzer-12345678-linux-x86_64.tar.gz",
+            "url": "https://github.com/imthegoodboy/ScamShielddd-AI/releases/download/scamshield-analyzer-v0.1.1/tool-test-scamshield-analyzer-12345678-linux-x86_64.tar.gz",
             "entrypoint": "tool-test-scamshield-analyzer-12345678",
             "format": "tar.gz"
+          },
+          "windows-x86_64": {
+            "url": "https://github.com/imthegoodboy/ScamShielddd-AI/releases/download/scamshield-analyzer-v0.1.1/tool-test-scamshield-analyzer-12345678-windows-x86_64.zip",
+            "entrypoint": "tool-test-scamshield-analyzer-12345678.exe",
+            "format": "zip"
           }
         }
       }

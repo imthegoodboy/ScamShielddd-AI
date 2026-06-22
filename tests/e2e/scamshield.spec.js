@@ -44,6 +44,32 @@ test("runs a job-scam investigation, saves history, and creates a PDF", async ({
   expect(errors).toEqual([]);
 });
 
+test("supports accessible report tabs from the keyboard", async ({ page }) => {
+  await page.goto("/");
+  const reasons = page.getByRole("tab", { name: "Reasons" });
+  const actions = page.getByRole("tab", { name: "Actions" });
+
+  await reasons.focus();
+  await page.keyboard.press("ArrowRight");
+
+  await expect(actions).toBeFocused();
+  await expect(actions).toHaveAttribute("aria-selected", "true");
+  await expect(page.getByRole("tabpanel", { name: "Actions" })).toBeVisible();
+});
+
+test("rejects oversized image uploads before reading them", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Screenshot" }).click();
+  await page.setInputFiles("#file-input", {
+    name: "too-large.png",
+    mimeType: "image/png",
+    buffer: Buffer.alloc(6 * 1024 * 1024 + 1),
+  });
+
+  await expect(page.locator("#file-meta")).toContainText("Use an image under 6.00 MB");
+  await expect(page.locator("#status-line")).toContainText("Image is 6.00 MB");
+});
+
 for (const width of [320, 375, 414, 768]) {
   test(`renders without horizontal overflow at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
