@@ -423,11 +423,54 @@ textarea::placeholder {
   background: var(--color-paper-2);
 }
 
-.drop-zone input {
-  min-height: auto;
-  padding: 0;
-  border: 0;
-  background: transparent;
+.file-input {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.file-picker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  min-height: 2.875rem;
+  padding-inline: var(--space-sm);
+  color: var(--color-ink-2);
+  background: var(--color-paper);
+  border: var(--rule-hair) solid var(--color-rule-2);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: var(--text-sm);
+  font-weight: 650;
+  white-space: nowrap;
+  transition:
+    transform var(--dur-micro) var(--ease-out),
+    background-color var(--dur-short) var(--ease-out),
+    color var(--dur-short) var(--ease-out),
+    border-color var(--dur-short) var(--ease-out);
+}
+
+.file-picker svg {
+  inline-size: 1rem;
+  block-size: 1rem;
+}
+
+.file-input:focus-visible + .file-picker {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.drop-zone__copy {
+  min-width: 0;
+}
+
+.drop-zone__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
 }
 
 .drop-zone strong,
@@ -667,6 +710,14 @@ textarea::placeholder {
 
 .icon-action.is-disabled {
   pointer-events: none;
+  cursor: not-allowed;
+  opacity: 0.52;
+}
+
+.icon-action[data-state="copied"] {
+  color: var(--color-safe);
+  background: color-mix(in oklch, var(--color-safe) 10%, var(--color-paper));
+  border-color: var(--color-safe);
 }
 
 .history-band {
@@ -817,6 +868,7 @@ textarea:focus-visible {
   .mode-btn:hover,
   .sample-btn:hover,
   .btn:hover,
+  .file-picker:hover,
   .icon-action:hover,
   .tab:hover,
   .nav-pill__link:hover {
@@ -825,6 +877,7 @@ textarea:focus-visible {
 
   .mode-btn:not(.is-active):hover,
   .sample-btn:hover,
+  .file-picker:hover,
   .btn--quiet:hover,
   .icon-action:hover,
   .tab:not(.is-active):hover,
@@ -836,6 +889,7 @@ textarea:focus-visible {
 
 .mode-btn:active,
 .sample-btn:active,
+.file-picker:active,
 .btn:active,
 .icon-action:active,
 .tab:active {
@@ -899,7 +953,11 @@ textarea:focus-visible {
 
   .drop-zone {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .drop-zone__actions {
+    justify-content: end;
   }
 
   .history-row {

@@ -7,8 +7,10 @@ ScamShield AI is an Anna App with one bundled Python Executa.
 ```powershell
 npm install
 npm test
+npm run fixture:verify
 npm run validate
 npm run test:e2e
+npm audit --audit-level=moderate
 ```
 
 Run the Anna harness:
@@ -40,17 +42,19 @@ Use production unless intentionally testing staging:
 ```powershell
 $ANNA_HOST = "https://anna.partners"
 npm test
+npm run fixture:verify
 npm run validate
 npm run test:e2e
+npm audit --audit-level=moderate
 anna-app apps push --account $ANNA_HOST --json
-anna-app apps cut 0.1.3 --account $ANNA_HOST --json
+anna-app apps cut 0.1.4 --account $ANNA_HOST --json
 anna-app apps status scamshield-ai --account $ANNA_HOST --json
 ```
 
 Release only after explicit approval:
 
 ```powershell
-anna-app apps release 0.1.3 --account $ANNA_HOST --json
+anna-app apps release 0.1.4 --account $ANNA_HOST --json
 ```
 
 ## Runtime notes

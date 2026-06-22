@@ -505,6 +505,8 @@ function renderEmptyReport() {
   els.agentNote.textContent = "Anna synthesis has not run for this report.";
   for (const el of [els.save, els.copy, els.chat]) el.disabled = true;
   els.pdf.classList.add("is-disabled");
+  els.pdf.setAttribute("aria-disabled", "true");
+  els.pdf.tabIndex = -1;
 }
 
 function renderReport(report) {
@@ -521,6 +523,8 @@ function renderReport(report) {
   els.agentNote.textContent = report.agent_note || "Anna synthesis has not run for this report.";
   for (const el of [els.save, els.copy, els.chat]) el.disabled = false;
   els.pdf.classList.remove("is-disabled");
+  els.pdf.setAttribute("aria-disabled", "false");
+  els.pdf.tabIndex = 0;
 }
 
 function renderFindings(findings) {

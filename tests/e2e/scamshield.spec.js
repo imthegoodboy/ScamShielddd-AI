@@ -17,7 +17,7 @@ test("runs a job-scam investigation, saves history, and creates a PDF", async ({
   });
 
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: /check the thing/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /check before/i })).toBeVisible();
   await page.getByRole("button", { name: /job offer/i }).click();
   await page.getByLabel("Job offer text").fill(
     "Amazon Work From Home HR. Salary Rs 60,000 per month. Pay registration fee Rs 500 immediately to receive your interview letter.",
@@ -74,7 +74,7 @@ for (const width of [320, 375, 414, 768]) {
   test(`renders without horizontal overflow at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/");
-    await expect(page.getByRole("heading", { name: /check the thing/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /check before/i })).toBeVisible();
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
     expect(overflow).toBe(false);
   });

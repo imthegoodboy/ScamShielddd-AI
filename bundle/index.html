@@ -41,7 +41,7 @@
       <section class="intro-band reveal">
         <div>
           <p class="section-note">Fraud investigation workbench</p>
-          <h1>Check the thing before it costs you.</h1>
+          <h1>Check before you click.</h1>
         </div>
         <p>
           Paste a message, inspect a link, decode a QR code, or analyze an offer.
@@ -52,31 +52,31 @@
 
       <section class="app-grid reveal">
         <aside class="mode-rail" aria-label="Scan modes">
-          <button class="mode-btn is-active" type="button" data-mode="message">
+          <button class="mode-btn is-active" type="button" data-mode="message" aria-pressed="true">
             <svg aria-hidden="true"><use href="#i-message"></use></svg>
             <span>Paste Message</span>
           </button>
-          <button class="mode-btn" type="button" data-mode="website">
+          <button class="mode-btn" type="button" data-mode="website" aria-pressed="false">
             <svg aria-hidden="true"><use href="#i-globe"></use></svg>
             <span>Website</span>
           </button>
-          <button class="mode-btn" type="button" data-mode="email">
+          <button class="mode-btn" type="button" data-mode="email" aria-pressed="false">
             <svg aria-hidden="true"><use href="#i-mail"></use></svg>
             <span>Email</span>
           </button>
-          <button class="mode-btn" type="button" data-mode="job">
+          <button class="mode-btn" type="button" data-mode="job" aria-pressed="false">
             <svg aria-hidden="true"><use href="#i-briefcase"></use></svg>
             <span>Job Offer</span>
           </button>
-          <button class="mode-btn" type="button" data-mode="investment">
+          <button class="mode-btn" type="button" data-mode="investment" aria-pressed="false">
             <svg aria-hidden="true"><use href="#i-trend"></use></svg>
             <span>Investment</span>
           </button>
-          <button class="mode-btn" type="button" data-mode="qr">
+          <button class="mode-btn" type="button" data-mode="qr" aria-pressed="false">
             <svg aria-hidden="true"><use href="#i-qr"></use></svg>
             <span>QR Code</span>
           </button>
-          <button class="mode-btn" type="button" data-mode="screenshot">
+          <button class="mode-btn" type="button" data-mode="screenshot" aria-pressed="false">
             <svg aria-hidden="true"><use href="#i-image"></use></svg>
             <span>Screenshot</span>
           </button>
@@ -118,13 +118,19 @@
           </div>
 
           <div class="drop-zone is-hidden" data-field="file">
-            <input id="file-input" type="file" accept="image/png,image/jpeg,image/webp,image/gif" aria-describedby="file-meta" />
-            <div>
+            <input class="file-input" id="file-input" type="file" accept="image/png,image/jpeg,image/webp,image/gif" aria-describedby="file-meta" />
+            <label class="file-picker" for="file-input">
+              <svg aria-hidden="true"><use href="#i-image"></use></svg>
+              <span>Choose image</span>
+            </label>
+            <div class="drop-zone__copy">
               <strong id="file-label">Upload screenshot or QR image</strong>
               <span id="file-meta">PNG, JPG, WEBP, GIF up to 6 MB. Images stay local unless you ask Anna to inspect them.</span>
             </div>
-            <button class="btn btn--quiet" id="extract-btn" type="button">Extract with Anna</button>
-            <button class="btn btn--quiet" id="decode-qr-btn" type="button">Decode QR</button>
+            <div class="drop-zone__actions">
+              <button class="btn btn--quiet" id="extract-btn" type="button">Extract with Anna</button>
+              <button class="btn btn--quiet" id="decode-qr-btn" type="button">Decode QR</button>
+            </div>
           </div>
 
           <div class="field-row">
@@ -144,7 +150,7 @@
               <svg aria-hidden="true"><use href="#i-shield"></use></svg>
               <span>Investigate</span>
             </button>
-            <button class="btn btn--secondary" id="agent-btn" type="button" disabled>
+            <button class="btn btn--secondary" id="agent-btn" type="button" disabled title="Runs after an Anna runtime investigation is available">
               <svg aria-hidden="true"><use href="#i-spark"></use></svg>
               <span>Ask Anna</span>
             </button>
@@ -201,7 +207,7 @@
             <button class="icon-action" id="copy-btn" type="button" disabled title="Copy actions" aria-label="Copy actions">
               <svg aria-hidden="true"><use href="#i-copy"></use></svg>
             </button>
-            <a class="icon-action is-disabled" id="pdf-link" href="#" download="scamshield-report.pdf" title="Download PDF" aria-label="Download PDF">
+            <a class="icon-action is-disabled" id="pdf-link" href="#" download="scamshield-report.pdf" title="Download PDF" aria-label="Download PDF" aria-disabled="true" tabindex="-1">
               <svg aria-hidden="true"><use href="#i-download"></use></svg>
             </a>
             <button class="icon-action" id="chat-btn" type="button" disabled title="Send to Anna chat" aria-label="Send to Anna chat">
@@ -226,7 +232,7 @@
     </main>
 
     <footer class="foot-line">
-      <span>ScamShield AI v0.1.3</span>
+      <span>ScamShield AI v0.1.4</span>
       <span id="runtime-detail">Runtime not connected.</span>
       <span>Evidence-first. No provider keys.</span>
     </footer>
