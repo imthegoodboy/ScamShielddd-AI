@@ -82,6 +82,8 @@ What those cover:
 
 ## Anna Deployment
 
+Production publish depends on GitHub Release binaries for the bundled Executa. The release workflow `.github/workflows/build-release.yml` builds and attaches the three assets referenced by `executas/scamshield-analyzer/executa.json` under tag `scamshield-analyzer-v0.1.0`.
+
 Push and cut through Anna only after local gates pass:
 
 ```powershell

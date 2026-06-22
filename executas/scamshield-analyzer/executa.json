@@ -16,10 +16,25 @@
       },
       "binary": {
         "type": "binary",
-        "package_name": "tool-test-scamshield-analyzer-12345678",
         "executable_name": "tool-test-scamshield-analyzer-12345678",
         "supports_protocol": true,
-        "binary_urls": {}
+        "binary_urls": {
+          "darwin-arm64": {
+            "url": "https://github.com/imthegoodboy/ScamShielddd-AI/releases/download/scamshield-analyzer-v0.1.0/tool-test-scamshield-analyzer-12345678-darwin-arm64.tar.gz",
+            "entrypoint": "tool-test-scamshield-analyzer-12345678",
+            "format": "tar.gz"
+          },
+          "darwin-x86_64": {
+            "url": "https://github.com/imthegoodboy/ScamShielddd-AI/releases/download/scamshield-analyzer-v0.1.0/tool-test-scamshield-analyzer-12345678-darwin-x86_64.tar.gz",
+            "entrypoint": "tool-test-scamshield-analyzer-12345678",
+            "format": "tar.gz"
+          },
+          "linux-x86_64": {
+            "url": "https://github.com/imthegoodboy/ScamShielddd-AI/releases/download/scamshield-analyzer-v0.1.0/tool-test-scamshield-analyzer-12345678-linux-x86_64.tar.gz",
+            "entrypoint": "tool-test-scamshield-analyzer-12345678",
+            "format": "tar.gz"
+          }
+        }
       }
     }
   }

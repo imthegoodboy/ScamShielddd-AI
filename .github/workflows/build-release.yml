@@ -1,15 +1,84 @@
-name: ScamShield Release Artifact
+name: ScamShield Executa Release
 
 on:
   release:
     types: [created]
   workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to attach assets to"
+        type: string
+        default: "scamshield-analyzer-v0.1.0"
 
 permissions:
   contents: write
 
+env:
+  TOOL_ID: tool-test-scamshield-analyzer-12345678
+  EXECUTA_DIR: executas/scamshield-analyzer
+
 jobs:
-  package:
+  build-binary:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-14
+            platform: darwin-arm64
+            python_arch: arm64
+          - os: macos-15
+            platform: darwin-x86_64
+            python_arch: x64
+          - os: ubuntu-latest
+            platform: linux-x86_64
+            python_arch: x64
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          architecture: ${{ matrix.python_arch }}
+
+      - name: Install PyInstaller
+        run: python -m pip install --upgrade pip pyinstaller
+
+      - name: Build binary
+        working-directory: ${{ env.EXECUTA_DIR }}
+        run: pyinstaller --onefile --clean --noupx --name "$TOOL_ID" scamshield_analyzer.py
+
+      - name: Smoke test protocol
+        working-directory: ${{ env.EXECUTA_DIR }}
+        run: |
+          out="$(printf '%s\n' '{"jsonrpc":"2.0","method":"describe","id":1}' | "./dist/$TOOL_ID" 2>/dev/null)"
+          echo "$out"
+          printf '%s' "$out" | python -c "import json,os,sys; d=json.load(sys.stdin); assert d['result']['name'] == os.environ['TOOL_ID']"
+
+      - name: Package binary
+        working-directory: ${{ env.EXECUTA_DIR }}/dist
+        run: |
+          asset="$TOOL_ID-${{ matrix.platform }}.tar.gz"
+          tar czf "$asset" "$TOOL_ID"
+          shasum -a 256 "$asset" > "$asset.sha256"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.TOOL_ID }}-${{ matrix.platform }}
+          path: |
+            ${{ env.EXECUTA_DIR }}/dist/${{ env.TOOL_ID }}-${{ matrix.platform }}.tar.gz
+            ${{ env.EXECUTA_DIR }}/dist/${{ env.TOOL_ID }}-${{ matrix.platform }}.tar.gz.sha256
+
+      - name: Attach to GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.release.tag_name || inputs.tag }}
+          files: |
+            ${{ env.EXECUTA_DIR }}/dist/${{ env.TOOL_ID }}-${{ matrix.platform }}.tar.gz
+            ${{ env.EXECUTA_DIR }}/dist/${{ env.TOOL_ID }}-${{ matrix.platform }}.tar.gz.sha256
+
+  package-source:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -30,7 +99,7 @@ jobs:
 
       - name: Create Anna app source archive
         run: |
-          tag="${GITHUB_REF_NAME:-manual}"
+          tag="${{ github.event.release.tag_name || inputs.tag }}"
           mkdir -p dist-anna
           tar czf "dist-anna/scamshield-ai-${tag}.tar.gz" \
             app.json \
@@ -52,8 +121,8 @@ jobs:
           name: scamshield-ai-anna-app
           path: dist-anna/*.tar.gz
 
-      - name: Attach archive to GitHub release
-        if: ${{ github.event_name == 'release' }}
+      - name: Attach source archive to GitHub release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ github.event.release.tag_name || inputs.tag }}
           files: dist-anna/*.tar.gz

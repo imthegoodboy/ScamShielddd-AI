@@ -25,6 +25,15 @@ anna-app dev --port 5184 --llm-account https://anna.partners
 
 ## Push and cut
 
+The bundled Executa must have public release assets before `apps push`.
+The GitHub workflow `.github/workflows/build-release.yml` builds:
+
+- `tool-test-scamshield-analyzer-12345678-darwin-arm64.tar.gz`
+- `tool-test-scamshield-analyzer-12345678-darwin-x86_64.tar.gz`
+- `tool-test-scamshield-analyzer-12345678-linux-x86_64.tar.gz`
+
+Create or dispatch the release tag `scamshield-analyzer-v0.1.0` first.
+
 Use production unless intentionally testing staging:
 
 ```powershell
